@@ -1,10 +1,11 @@
-// import 'package:brycen_chatbot/widget/app_bar.dart';
+import 'package:brycen_chatbot/screens/chat_screen.dart';
+import 'package:brycen_chatbot/screens/summarize_screen.dart';
+import 'package:brycen_chatbot/values/share_keys.dart';
 import 'package:brycen_chatbot/widget/app_bar.dart';
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
-
-import 'package:shared_preferences/shared_preferences.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -25,10 +26,22 @@ class _HomeScreenState extends State<HomeScreen> {
   late SharedPreferences prefs;
   var _initAPIKey = '';
   var _initUsername = '';
-  var _isValid = false;
+  bool _isValid = false;
+  bool _isLoading = false;
+  bool passwordVisible = true;
 
   bool? _isAPI;
   String? errorText;
+  //
+  //
+  @override
+  void initState() {
+    _getLocalValue();
+    super.initState();
+    setState(() {
+      _isLoading = false;
+    });
+  }
 
   Future<bool> checkApiKey(String apiKey) async {
     final response = await http.post(
@@ -40,37 +53,146 @@ class _HomeScreenState extends State<HomeScreen> {
       body: jsonEncode({
         "model": "text-davinci-003",
         "prompt": "Say this is a test",
-        "max_tokens": 7,
+        "max_tokens": 5,
         "temperature": 0,
       }),
     );
+    ScaffoldMessenger.of(context).clearSnackBars();
+
     final message = jsonDecode(response.body);
     if (response.statusCode == 200) {
       _isAPI = true;
       print(message['choices'][0]['text']);
       return true;
     } else {
-      print(message['error']['message']);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          backgroundColor: Theme.of(context).colorScheme.error,
+          content: Text(message['error']['message']),
+        ),
+      );
       return false;
     }
   }
 
   Future<void> _submit() async {
-    // _apiController.clear();
-    final isValid = _formKey.currentState!.validate();
-    if (isValid) {
+    if (_formKey.currentState!.validate()) {
       _formKey.currentState!.save();
-    }
-    if (_isAPI == true) {
+      prefs.setString(ShareKeys.APIkey, _enteredAPIKey.text);
+      prefs.setString(ShareKeys.Username, _enteredUsername.text);
       print('Accept');
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          backgroundColor: Colors.green,
+          content: Text('Successed'),
+        ),
+      );
       return;
     }
-    _enteredAPIKey.clear();
+  }
+
+  void _getLocalValue() async {
+    prefs = await SharedPreferences.getInstance();
+    setState(() {
+      _initAPIKey = prefs.getString(ShareKeys.APIkey) ?? '';
+      _initUsername = prefs.getString(ShareKeys.Username) ?? '';
+      if (_initAPIKey != '' && _initUsername != '') {
+        _isValid = true;
+        _enteredAPIKey.text = _initAPIKey;
+        _enteredUsername.text = _initUsername;
+      }
+    });
   }
 
   @override
   Widget build(BuildContext context) {
-    var userInfo = Padding(
+    var UserForm = Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 40),
+      child: Form(
+        key: _formKey,
+        child: Column(
+          children: [
+            TextFormField(
+              autofocus: true,
+              textCapitalization: TextCapitalization.words,
+              controller: _enteredUsername,
+              decoration: const InputDecoration(
+                hintText: 'Your Name:',
+              ),
+              validator: (value) {
+                if (value == null || value.trim().isEmpty) {
+                  return "Không được để trống tên";
+                }
+                return null;
+              },
+            ),
+            const SizedBox(height: 8),
+            TextFormField(
+              controller: _enteredAPIKey,
+              obscureText: false,
+              decoration: InputDecoration(
+                labelText: 'API Key',
+                prefixIcon: Icon(Icons.key,
+                    color: Theme.of(context).colorScheme.secondary),
+                hintText: "Insert your OpenAPI key...",
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                suffixIcon: IconButton(
+                  icon: Icon(passwordVisible
+                      ? Icons.visibility
+                      : Icons.visibility_off),
+                  onPressed: () {
+                    setState(
+                      () {
+                        passwordVisible = !passwordVisible;
+                      },
+                    );
+                  },
+                ),
+              ),
+              onChanged: (value) async {
+                final check = await checkApiKey(value);
+                setState(() => _isAPI = check);
+              },
+              validator: (value) {
+                if (value == null || value.trim().isEmpty) {
+                  return "Không được để trống API key.";
+                }
+
+                if (value.trim().length != 51) {
+                  return "Độ dài API Key không hợp lệ.";
+                }
+                if (!_isAPI!) {
+                  return "API Key không tồn tại.";
+                }
+                return null;
+              },
+              onSaved: (value) {
+                _enteredAPIKey.text = value!;
+              },
+            ),
+            const SizedBox(height: 10),
+            ElevatedButton(
+              onPressed: () {
+                if (_formKey.currentState!.validate()) {
+                  _submit();
+                  setState(() {
+                    _initAPIKey = _enteredAPIKey.text;
+                    _initUsername = _enteredUsername.text;
+                    _isValid = true;
+                  });
+                }
+              },
+              child: Text('Submit'),
+            ),
+          ],
+        ),
+      ),
+    );
+
+    if (_isValid) {
+      UserForm = Padding(
         padding: const EdgeInsets.symmetric(horizontal: 60),
         child: Column(
           children: [
@@ -91,10 +213,9 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
             ),
             Text.rich(TextSpan(
-                text:
-                    //_initAPIKey.substring(0, 5) +
-                    '***',
-                // _initAPIKey.substring(48, 51),
+                text: _initAPIKey.substring(0, 5) +
+                    '***' +
+                    _initAPIKey.substring(48, 51),
                 style: TextStyle(
                   fontStyle: FontStyle.italic,
                   color: Theme.of(context).colorScheme.primary,
@@ -112,104 +233,36 @@ class _HomeScreenState extends State<HomeScreen> {
               ],
             ),
           ],
-        ));
-
-    var inputForm = [
-      Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 40),
-        child: Form(
-          key: _formKey,
-          child: Column(
-            children: [
-              TextFormField(
-                autofocus: true,
-                textCapitalization: TextCapitalization.words,
-                controller: _enteredUsername,
-                // textInputAction: TextInputAction.continueAction,
-                decoration: const InputDecoration(
-                  hintText: 'Your Name:',
-                ),
-
-                onSaved: (value) {
-                  _enteredUsername.text = value!;
-                },
-              ),
-              const SizedBox(height: 8),
-              TextFormField(
-                controller: _enteredAPIKey,
-                obscureText: false,
-                keyboardType: TextInputType.visiblePassword,
-                decoration: InputDecoration(
-                  errorText: errorText,
-                  contentPadding: const EdgeInsets.only(right: 40),
-                  labelText: 'API Key',
-                  prefixIcon: Icon(Icons.key,
-                      color: Theme.of(context).colorScheme.secondary),
-                  hintText: "Insert your OpenAPI key...",
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                ),
-                onChanged: (value) async {
-                  final check = await checkApiKey(value);
-                  setState(() => _isAPI = check);
-                },
-                validator: (value) {
-                  if (value == null || value.trim().isEmpty) {
-                    return "Không được để trống API key.";
-                  }
-
-                  if (value.trim().length != 51) {
-                    return "Độ dài API Key không hợp lệ.";
-                  }
-                  if (!_isAPI!) {
-                    return "API Key không tồn tại.";
-                  }
-                  return null;
-                },
-                onSaved: (value) {
-                  _enteredAPIKey.text = value!;
-                },
-                enableSuggestions: false,
-              ),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.end,
-                children: [
-                  ElevatedButton(
-                    onPressed: () {
-                      if (_formKey.currentState!.validate()) {
-                        // _addNewUserKey();
-                        _submit;
-                        setState(() {
-                          // _initAPIKey = _enteredAPIKey.text;
-                          // _initUsername = _enteredUsername.text;
-                          // _isValid = true;
-                        });
-                      }
-                    },
-                    child:
-                        // _isLoading
-                        // ? const SizedBox(
-                        //     height: 16,
-                        //     width: 16,
-                        //     child: CircularProgressIndicator(),
-                        //   )
-                        // :
-                        const Text('Submit'),
-                  ),
-                ],
-              ),
-            ],
-          ),
         ),
-      ),
-    ];
+      );
+    }
+
     return Scaffold(
-      appBar: ConfigAppBar(title: 'Summarize Screen'),
+      appBar: ConfigAppBar(title: 'Home Screen'),
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
-          children: inputForm,
+          children: <Widget>[
+            UserForm,
+            if (_isValid)
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  ElevatedButton(
+                    onPressed: () {
+                      Navigator.pushNamed(context, ChatScreen.id);
+                    },
+                    child: const Text('Chatbot'),
+                  ),
+                  ElevatedButton(
+                    onPressed: () {
+                      Navigator.pushNamed(context, SummarizeScreen.id);
+                    },
+                    child: const Text('Summary'),
+                  ),
+                ],
+              ),
+          ],
         ),
       ),
     );
