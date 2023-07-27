@@ -1,7 +1,10 @@
 // import 'package:brycen_chatbot/widget/app_bar.dart';
+import 'package:brycen_chatbot/widget/app_bar.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+
+import 'package:shared_preferences/shared_preferences.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -14,9 +17,17 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
+  // controllers for form text controllers
+  final _formKey = GlobalKey<FormState>();
+  final TextEditingController _enteredAPIKey = TextEditingController();
+  final TextEditingController _enteredUsername = TextEditingController();
+
+  late SharedPreferences prefs;
+  var _initAPIKey = '';
+  var _initUsername = '';
+  var _isValid = false;
+
   bool? _isAPI;
-  final _apiController = TextEditingController();
-  final key = GlobalKey<FormState>();
   String? errorText;
 
   Future<bool> checkApiKey(String apiKey) async {
@@ -46,32 +57,99 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Future<void> _submit() async {
     // _apiController.clear();
-    final isValid = key.currentState!.validate();
+    final isValid = _formKey.currentState!.validate();
     if (isValid) {
-      key.currentState!.save();
+      _formKey.currentState!.save();
     }
     if (_isAPI == true) {
       print('Accept');
       return;
     }
-    _apiController.clear();
+    _enteredAPIKey.clear();
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Flutter Demo '),
-      ),
-      body: Center(
+    var userInfo = Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 60),
         child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            Form(
-              key: key,
-              child: TextFormField(
-                controller: _apiController,
+          children: [
+            Text.rich(
+              TextSpan(
+                text: 'Hello ', // default text style
+                children: <TextSpan>[
+                  TextSpan(
+                      text: _initUsername,
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        color: Theme.of(context).colorScheme.primary,
+                      )),
+                  const TextSpan(
+                    text: ', Your API key is:',
+                  ),
+                ],
+              ),
+            ),
+            Text.rich(TextSpan(
+                text:
+                    //_initAPIKey.substring(0, 5) +
+                    '***',
+                // _initAPIKey.substring(48, 51),
+                style: TextStyle(
+                  fontStyle: FontStyle.italic,
+                  color: Theme.of(context).colorScheme.primary,
+                ))),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
+                TextButton(
+                    onPressed: () {
+                      setState(() {
+                        _isValid = false;
+                      });
+                    },
+                    child: Text('change')),
+              ],
+            ),
+          ],
+        ));
+
+    var inputForm = [
+      Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 40),
+        child: Form(
+          key: _formKey,
+          child: Column(
+            children: [
+              TextFormField(
+                autofocus: true,
+                textCapitalization: TextCapitalization.words,
+                controller: _enteredUsername,
+                // textInputAction: TextInputAction.continueAction,
+                decoration: const InputDecoration(
+                  hintText: 'Your Name:',
+                ),
+
+                onSaved: (value) {
+                  _enteredUsername.text = value!;
+                },
+              ),
+              const SizedBox(height: 8),
+              TextFormField(
+                controller: _enteredAPIKey,
                 obscureText: false,
+                keyboardType: TextInputType.visiblePassword,
+                decoration: InputDecoration(
+                  errorText: errorText,
+                  contentPadding: const EdgeInsets.only(right: 40),
+                  labelText: 'API Key',
+                  prefixIcon: Icon(Icons.key,
+                      color: Theme.of(context).colorScheme.secondary),
+                  hintText: "Insert your OpenAPI key...",
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                ),
                 onChanged: (value) async {
                   final check = await checkApiKey(value);
                   setState(() => _isAPI = check);
@@ -90,22 +168,49 @@ class _HomeScreenState extends State<HomeScreen> {
                   return null;
                 },
                 onSaved: (value) {
-                  _apiController.text = value!;
+                  _enteredAPIKey.text = value!;
                 },
                 enableSuggestions: false,
-                decoration: InputDecoration(
-                  errorText: errorText,
-                  contentPadding: const EdgeInsets.only(right: 40),
-                ),
               ),
-            ),
-          ],
+              Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  ElevatedButton(
+                    onPressed: () {
+                      if (_formKey.currentState!.validate()) {
+                        // _addNewUserKey();
+                        _submit;
+                        setState(() {
+                          // _initAPIKey = _enteredAPIKey.text;
+                          // _initUsername = _enteredUsername.text;
+                          // _isValid = true;
+                        });
+                      }
+                    },
+                    child:
+                        // _isLoading
+                        // ? const SizedBox(
+                        //     height: 16,
+                        //     width: 16,
+                        //     child: CircularProgressIndicator(),
+                        //   )
+                        // :
+                        const Text('Submit'),
+                  ),
+                ],
+              ),
+            ],
+          ),
         ),
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _submit,
-        tooltip: 'button',
-        child: const Icon(Icons.account_circle),
+    ];
+    return Scaffold(
+      appBar: ConfigAppBar(title: 'Summarize Screen'),
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: inputForm,
+        ),
       ),
     );
   }
