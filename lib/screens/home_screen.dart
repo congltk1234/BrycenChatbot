@@ -116,8 +116,10 @@ class _HomeScreenState extends State<HomeScreen> {
               autofocus: true,
               textCapitalization: TextCapitalization.words,
               controller: _enteredUsername,
-              decoration: const InputDecoration(
+              decoration: InputDecoration(
                 hintText: 'Your Name:',
+                prefixIcon: Icon(Icons.account_circle,
+                    color: Theme.of(context).colorScheme.secondary),
               ),
               validator: (value) {
                 if (value == null || value.trim().isEmpty) {
@@ -129,7 +131,7 @@ class _HomeScreenState extends State<HomeScreen> {
             const SizedBox(height: 8),
             TextFormField(
               controller: _enteredAPIKey,
-              obscureText: false,
+              obscureText: passwordVisible,
               decoration: InputDecoration(
                 labelText: 'API Key',
                 prefixIcon: Icon(Icons.key,
@@ -184,7 +186,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   });
                 }
               },
-              child: Text('Submit'),
+              child: const Text('Submit'),
             ),
           ],
         ),
@@ -213,9 +215,8 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
             ),
             Text.rich(TextSpan(
-                text: _initAPIKey.substring(0, 5) +
-                    '***' +
-                    _initAPIKey.substring(48, 51),
+                text:
+                    '${_initAPIKey.substring(0, 5)}***${_initAPIKey.substring(48, 51)}',
                 style: TextStyle(
                   fontStyle: FontStyle.italic,
                   color: Theme.of(context).colorScheme.primary,
@@ -229,7 +230,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         _isValid = false;
                       });
                     },
-                    child: Text('change')),
+                    child: const Text('change')),
               ],
             ),
           ],

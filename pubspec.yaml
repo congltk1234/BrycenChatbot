@@ -37,6 +37,11 @@ dependencies:
   cupertino_icons: ^1.0.2
   http: ^1.1.0
   shared_preferences: ^2.2.0
+  langchain: ^0.0.1
+  cloud_firestore: ^4.8.4
+  firebase_core: ^2.15.0
+  flutter_riverpod: ^2.3.6
+  speech_to_text: ^6.3.0
 
 dev_dependencies:
   flutter_test:
