@@ -29,7 +29,7 @@ class _HomeScreenState extends State<HomeScreen> {
   bool _isValid = false;
   bool _isLoading = false;
   bool passwordVisible = true;
-
+  var _isExpired = true;
   bool? _isAPI;
   String? errorText;
   //
@@ -101,6 +101,10 @@ class _HomeScreenState extends State<HomeScreen> {
         _enteredAPIKey.text = _initAPIKey;
         _enteredUsername.text = _initUsername;
       }
+    });
+    final key_status = await checkApiKey(_initAPIKey);
+    setState(() {
+      _isExpired = !key_status;
     });
   }
 
@@ -200,8 +204,11 @@ class _HomeScreenState extends State<HomeScreen> {
           children: [
             Text.rich(
               TextSpan(
+                style: const TextStyle(
+                  fontSize: 20,
+                ),
                 text: 'Hello ', // default text style
-                children: <TextSpan>[
+                children: [
                   TextSpan(
                       text: _initUsername,
                       style: TextStyle(
@@ -219,18 +226,41 @@ class _HomeScreenState extends State<HomeScreen> {
                     '${_initAPIKey.substring(0, 5)}***${_initAPIKey.substring(48, 51)}',
                 style: TextStyle(
                   fontStyle: FontStyle.italic,
+                  fontSize: 20,
+                  fontWeight: FontWeight.w600,
                   color: Theme.of(context).colorScheme.primary,
                 ))),
             Row(
               mainAxisAlignment: MainAxisAlignment.end,
               children: [
+                if (_isExpired)
+                  Text(
+                    'Expired Key',
+                    style: TextStyle(
+                      color: Colors.red,
+                    ),
+                  ),
+                // ElevatedButton.icon(
+                //   onPressed: () {
+                //     setState(() {
+                //       _isValid = false;
+                //     });
+                //   },
+                //   icon: Icon(
+                //     Icons.account_circle_outlined,
+                //   ),
+                //   label: Text('Change'), // <-- Text
+                // ),
                 TextButton(
                     onPressed: () {
                       setState(() {
                         _isValid = false;
                       });
                     },
-                    child: const Text('change')),
+                    child: const Text(
+                      'change Key',
+                      style: TextStyle(decoration: TextDecoration.underline),
+                    )),
               ],
             ),
           ],
