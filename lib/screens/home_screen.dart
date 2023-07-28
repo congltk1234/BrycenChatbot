@@ -226,31 +226,23 @@ class _HomeScreenState extends State<HomeScreen> {
                     '${_initAPIKey.substring(0, 5)}***${_initAPIKey.substring(48, 51)}',
                 style: TextStyle(
                   fontStyle: FontStyle.italic,
+                  decoration: _isExpired ? TextDecoration.lineThrough : null,
                   fontSize: 20,
                   fontWeight: FontWeight.w600,
-                  color: Theme.of(context).colorScheme.primary,
+                  color: _isExpired
+                      ? Colors.red
+                      : Theme.of(context).colorScheme.primary,
                 ))),
             Row(
               mainAxisAlignment: MainAxisAlignment.end,
               children: [
                 if (_isExpired)
-                  Text(
+                  const Text(
                     'Expired Key',
                     style: TextStyle(
                       color: Colors.red,
                     ),
                   ),
-                // ElevatedButton.icon(
-                //   onPressed: () {
-                //     setState(() {
-                //       _isValid = false;
-                //     });
-                //   },
-                //   icon: Icon(
-                //     Icons.account_circle_outlined,
-                //   ),
-                //   label: Text('Change'), // <-- Text
-                // ),
                 TextButton(
                     onPressed: () {
                       setState(() {
