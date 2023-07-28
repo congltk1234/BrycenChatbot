@@ -2,6 +2,7 @@ import 'package:brycen_chatbot/screens/chat_screen.dart';
 import 'package:brycen_chatbot/screens/summarize_screen.dart';
 import 'package:brycen_chatbot/values/share_keys.dart';
 import 'package:brycen_chatbot/widget/app_bar.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
@@ -24,8 +25,10 @@ class _HomeScreenState extends State<HomeScreen> {
   final TextEditingController _enteredUsername = TextEditingController();
 
   late SharedPreferences prefs;
+  var _initUID = '';
   var _initAPIKey = '';
   var _initUsername = '';
+
   bool _isValid = false;
   bool _isLoading = false;
   bool passwordVisible = true;
@@ -38,6 +41,7 @@ class _HomeScreenState extends State<HomeScreen> {
   void initState() {
     _getLocalValue();
     super.initState();
+    print(_initUID);
     setState(() {
       _isLoading = false;
     });
@@ -87,6 +91,36 @@ class _HomeScreenState extends State<HomeScreen> {
           content: Text('Successed'),
         ),
       );
+
+      // send to fitebase
+      if (_initUID == '') {
+        await FirebaseFirestore.instance.collection('users').add({
+          'createdAt': Timestamp.now(),
+          'modifiedAt': Timestamp.now(),
+          'Username': _enteredUsername.text,
+          'APIkey': _enteredAPIKey.text,
+          // 'status': true,
+        });
+      } else {
+        await FirebaseFirestore.instance
+            .collection('users')
+            .doc(_initUID)
+            .update({
+          'modifiedAt': Timestamp.now(),
+          'Username': _enteredUsername.text,
+          'APIkey': _enteredAPIKey.text,
+          // 'status': true,
+        });
+      }
+      final uid = await FirebaseFirestore.instance
+          .collection('users')
+          .where('APIkey', isEqualTo: _enteredAPIKey.text)
+          .get();
+
+      prefs.setString(ShareKeys.UID, uid.docs.first.reference.id);
+      setState(() {
+        _initUID = uid.docs.first.reference.id;
+      });
       return;
     }
   }
@@ -96,6 +130,7 @@ class _HomeScreenState extends State<HomeScreen> {
     setState(() {
       _initAPIKey = prefs.getString(ShareKeys.APIkey) ?? '';
       _initUsername = prefs.getString(ShareKeys.Username) ?? '';
+      _initUID = prefs.getString(ShareKeys.UID) ?? '';
       if (_initAPIKey != '' && _initUsername != '') {
         _isValid = true;
         _enteredAPIKey.text = _initAPIKey;
