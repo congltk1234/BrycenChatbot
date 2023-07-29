@@ -1,16 +1,17 @@
+import 'package:animated_text_kit/animated_text_kit.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_tts/flutter_tts.dart';
 
 // ignore: must_be_immutable
 class ChatItem extends StatelessWidget {
-  ChatItem({
-    super.key,
-    required this.text,
-    required this.isUser,
-  });
+  ChatItem(
+      {super.key,
+      required this.text,
+      required this.isUser,
+      this.shouldAnimate = false});
   final String text;
   final bool isUser;
-
+  final bool shouldAnimate;
   FlutterTts flutterT2S = FlutterTts();
   bool _isSpeaking = false;
 
@@ -51,12 +52,25 @@ class ChatItem extends StatelessWidget {
                   bottomLeft: Radius.circular(isUser ? 15 : 0),
                   bottomRight: Radius.circular(isUser ? 0 : 15),
                 )),
-            child: Text(
-              text,
-              style: TextStyle(
-                color: Theme.of(context).colorScheme.onSecondary,
-              ),
-            ),
+            child: shouldAnimate
+                ? AnimatedTextKit(
+                    isRepeatingAnimation: false,
+                    repeatForever: false,
+                    displayFullTextOnTap: true,
+                    totalRepeatCount: 1,
+                    animatedTexts: [
+                      TyperAnimatedText(text.trim(),
+                          textStyle: const TextStyle(
+                            color: Colors.white,
+                          )),
+                    ],
+                  )
+                : Text(
+                    text,
+                    style: TextStyle(
+                      color: Theme.of(context).colorScheme.onSecondary,
+                    ),
+                  ),
           ),
           if (!isUser)
             IconButton(
@@ -93,7 +107,10 @@ class ProfileContainer extends StatelessWidget {
           bottomRight: Radius.circular(isUser ? 15 : 0),
         ),
       ),
-      child: Icon(isUser ? Icons.people : Icons.computer),
+      child: Icon(
+        isUser ? Icons.people : Icons.computer,
+        color: Colors.white,
+      ),
     );
   }
 }

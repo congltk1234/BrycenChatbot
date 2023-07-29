@@ -22,7 +22,7 @@ class _ChatScreenState extends State<ChatScreen> {
   String _initAPIKey = '';
   String _initUsername = '';
 
-  int k_memory = 4;
+  int k_memory = 6;
   var _memoryBuffer = '';
 
   @override
@@ -59,13 +59,60 @@ class _ChatScreenState extends State<ChatScreen> {
               child: CircularProgressIndicator(),
             );
           }
+          if (!chatSnapshots.hasData || chatSnapshots.data!.docs.isEmpty) {
+            return Scaffold(
+              appBar: const ConfigAppBar(title: 'Chat Screen'),
+              body: Column(
+                children: [
+                  const Expanded(
+                    child: Center(
+                      child: Text('No messages found.'),
+                    ),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.all(12.0),
+                    child: TextAndVoiceField(
+                      uid: _initUID,
+                      userName: _initUsername,
+                      apiKey: _initAPIKey,
+                      memory: _memoryBuffer,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                ],
+              ),
+            );
+          }
+          if (chatSnapshots.hasError) {
+            return Scaffold(
+              appBar: const ConfigAppBar(title: 'Chat Screen'),
+              body: Column(
+                children: [
+                  const Expanded(
+                    child: Center(
+                      child: Text('Something went wrong...'),
+                    ),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.all(12.0),
+                    child: TextAndVoiceField(
+                      uid: _initUID,
+                      userName: _initUsername,
+                      apiKey: _initAPIKey,
+                      memory: _memoryBuffer,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                ],
+              ),
+            );
+          }
           final loadedMessages = List.from(chatSnapshots.data!.docs.reversed);
           final lengthHistory = loadedMessages.length;
-          final memory = loadedMessages.sublist(
-              lengthHistory > (k_memory - 1) * 2
-                  ? lengthHistory - k_memory * 2
-                  : 0,
-              lengthHistory - 2);
+          final memory = lengthHistory >= (k_memory)
+              ? loadedMessages.sublist(
+                  lengthHistory - k_memory + 2, lengthHistory)
+              : loadedMessages.sublist(0, lengthHistory - 2);
           for (var msg in memory) {
             if (msg.data()['isUser']) {
               _memoryBuffer = "$_memoryBuffer\nHuman:";

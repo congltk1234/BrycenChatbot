@@ -56,7 +56,7 @@ class _HomeScreenState extends State<HomeScreen> {
       },
       body: jsonEncode({
         "model": "text-davinci-003",
-        "prompt": "Say this is a test",
+        "prompt": "Testing",
         "max_tokens": 5,
         "temperature": 0,
       }),
