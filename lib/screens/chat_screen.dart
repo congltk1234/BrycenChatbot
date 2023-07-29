@@ -1,7 +1,8 @@
 import 'package:brycen_chatbot/values/share_keys.dart';
 import 'package:brycen_chatbot/widget/app_bar.dart';
-import 'package:brycen_chatbot/widget/chat/chat_messages.dart';
+import 'package:brycen_chatbot/widget/chat/chat_item.dart';
 import 'package:brycen_chatbot/widget/chat/text_and_voice.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -17,9 +18,12 @@ class ChatScreen extends StatefulWidget {
 
 class _ChatScreenState extends State<ChatScreen> {
   late SharedPreferences prefs;
-  String _initUID = '';
-  var _initAPIKey = '';
-  var _initUsername = '';
+  String _initUID = 'id';
+  String _initAPIKey = '';
+  String _initUsername = '';
+
+  int k_memory = 4;
+  var _memoryBuffer = '';
 
   @override
   void initState() {
@@ -38,23 +42,67 @@ class _ChatScreenState extends State<ChatScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: const ConfigAppBar(title: 'Chat Screen'),
-      body: Column(
-        children: [
-          ////// Load Data from fireBase///
-          Expanded(
-            child: ChatMessages(
-              initUID: _initUID,
+    // FirebaseFirestore.instance.doc('users/$userID').;
+    return StreamBuilder(
+        stream: FirebaseFirestore.instance
+            .collection("users")
+            .doc(_initUID)
+            .collection('chat')
+            .orderBy(
+              "createdAt",
+              descending: true,
+            )
+            .snapshots(),
+        builder: (ctx, chatSnapshots) {
+          if (chatSnapshots.connectionState == ConnectionState.waiting) {
+            return const Center(
+              child: CircularProgressIndicator(),
+            );
+          }
+          final loadedMessages = List.from(chatSnapshots.data!.docs.reversed);
+          final lengthHistory = loadedMessages.length;
+          final memory = loadedMessages.sublist(
+              lengthHistory > (k_memory - 1) * 2
+                  ? lengthHistory - k_memory * 2
+                  : 0,
+              lengthHistory - 2);
+          for (var msg in memory) {
+            if (msg.data()['isUser']) {
+              _memoryBuffer = "$_memoryBuffer\nHuman:";
+            } else {
+              _memoryBuffer = "$_memoryBuffer\nAI:";
+            }
+            _memoryBuffer = _memoryBuffer + msg.data()['text'];
+          }
+
+          return Scaffold(
+            appBar: const ConfigAppBar(title: 'Chat Screen'),
+            body: Column(
+              children: [
+                Expanded(
+                  child: ListView.builder(
+                      itemCount: lengthHistory,
+                      itemBuilder: (context, index) {
+                        final chatMessage = loadedMessages[index].data();
+                        return ChatItem(
+                          text: chatMessage["text"],
+                          isUser: chatMessage["isUser"],
+                        );
+                      }),
+                ),
+                Padding(
+                  padding: const EdgeInsets.all(12.0),
+                  child: TextAndVoiceField(
+                    uid: _initUID,
+                    userName: _initUsername,
+                    apiKey: _initAPIKey,
+                    memory: _memoryBuffer,
+                  ),
+                ),
+                const SizedBox(height: 8),
+              ],
             ),
-          ),
-          const Padding(
-            padding: EdgeInsets.all(12.0),
-            child: TextAndVoiceField(),
-          ),
-          const SizedBox(height: 8),
-        ],
-      ),
-    );
+          );
+        });
   }
 }

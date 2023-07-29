@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_tts/flutter_tts.dart';
 
+// ignore: must_be_immutable
 class ChatItem extends StatelessWidget {
   ChatItem({
     super.key,
@@ -61,7 +62,6 @@ class ChatItem extends StatelessWidget {
             IconButton(
               onPressed: _speak,
               icon: Icon(_isSpeaking ? Icons.volume_mute : Icons.volume_up),
-              // color: Colors.white,
             )
         ],
       ),

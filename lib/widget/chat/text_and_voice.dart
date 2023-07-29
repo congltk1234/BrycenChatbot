@@ -1,9 +1,8 @@
-import 'package:brycen_chatbot/services/voice_handle.dart';
-import 'package:brycen_chatbot/values/share_keys.dart';
-import 'package:brycen_chatbot/widget/chat/toggle_button.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+
+import 'package:brycen_chatbot/services/voice_handle.dart';
+import 'package:brycen_chatbot/widget/chat/toggle_button.dart';
 
 enum InputMode {
   text,
@@ -11,18 +10,27 @@ enum InputMode {
 }
 
 class TextAndVoiceField extends StatefulWidget {
-  const TextAndVoiceField({super.key});
+  final String _initUID;
+  final String _initAPIKey;
+  final String _initUsername;
+  final String _memory;
+
+  const TextAndVoiceField({
+    super.key,
+    required String uid,
+    required String apiKey,
+    required String userName,
+    required String memory,
+  })  : _initUID = uid,
+        _initAPIKey = apiKey,
+        _initUsername = userName,
+        _memory = memory;
 
   @override
   State<TextAndVoiceField> createState() => _TextAndVoiceFieldState();
 }
 
 class _TextAndVoiceFieldState extends State<TextAndVoiceField> {
-  late SharedPreferences prefs;
-  var _initUID = '';
-  var _initAPIKey = '';
-  var _initUsername = '';
-
   InputMode _inputMode = InputMode.voice;
   final _messageController = TextEditingController();
   var _isReplying = false;
@@ -32,7 +40,6 @@ class _TextAndVoiceFieldState extends State<TextAndVoiceField> {
   @override
   void initState() {
     voiceHandler.initSpeech();
-    _getLocalValue();
     super.initState();
   }
 
@@ -40,15 +47,6 @@ class _TextAndVoiceFieldState extends State<TextAndVoiceField> {
   void dispose() {
     _messageController.dispose();
     super.dispose();
-  }
-
-  void _getLocalValue() async {
-    prefs = await SharedPreferences.getInstance();
-    setState(() {
-      _initAPIKey = prefs.getString(ShareKeys.APIkey)!;
-      _initUsername = prefs.getString(ShareKeys.Username)!;
-      _initUID = prefs.getString(ShareKeys.UID)!;
-    });
   }
 
   @override
@@ -120,7 +118,7 @@ class _TextAndVoiceFieldState extends State<TextAndVoiceField> {
     setReplyingState(true);
     await FirebaseFirestore.instance
         .collection('users')
-        .doc(_initUID)
+        .doc(widget._initUID)
         .collection("chat")
         .add({
       "text": message,
@@ -128,19 +126,26 @@ class _TextAndVoiceFieldState extends State<TextAndVoiceField> {
       "isUser": true,
     });
 
-    Future.delayed(const Duration(milliseconds: 2000), () {
-      print('delay');
-      setReplyingState(false);
-    });
+    /// Bot Response Chat GPT here
     await FirebaseFirestore.instance
         .collection('users')
-        .doc(_initUID)
+        .doc(widget._initUID)
         .collection("chat")
         .add({
-      "text": 'Bot Response: ' + message,
+      "text": 'Bot Response: $message',
       "createdAt": Timestamp.now(),
       "isUser": false,
     });
+
+//// Update memory
+    await FirebaseFirestore.instance
+        .collection("users")
+        .doc(widget._initUID)
+        .update({
+      "memory": "${widget._memory}\nHuman:$message\nAI:Bot Response $message"
+    });
+    // Here's a conversation between ${widget._initUsername} with AI:\n
+    setReplyingState(false);
   }
 
   void setReplyingState(bool isReplying) {
