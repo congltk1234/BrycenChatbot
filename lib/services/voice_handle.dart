@@ -1,5 +1,4 @@
 import 'dart:async';
-
 import 'package:speech_to_text/speech_to_text.dart';
 
 class VoiceHandler {
@@ -13,6 +12,7 @@ class VoiceHandler {
   Future<String> startListening() async {
     final completer = Completer<String>();
     _speechToText.listen(
+      localeId: "vi_VN",
       onResult: (result) {
         if (result.finalResult) {
           completer.complete(result.recognizedWords);

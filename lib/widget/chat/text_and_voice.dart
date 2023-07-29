@@ -1,23 +1,28 @@
-import 'package:brycen_chatbot/models/chat_model.dart';
-import 'package:brycen_chatbot/providers/chat_provider.dart';
 import 'package:brycen_chatbot/services/voice_handle.dart';
+import 'package:brycen_chatbot/values/share_keys.dart';
 import 'package:brycen_chatbot/widget/chat/toggle_button.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 enum InputMode {
   text,
   voice,
 }
 
-class TextAndVoiceField extends ConsumerStatefulWidget {
+class TextAndVoiceField extends StatefulWidget {
   const TextAndVoiceField({super.key});
 
   @override
-  ConsumerState<TextAndVoiceField> createState() => _TextAndVoiceFieldState();
+  State<TextAndVoiceField> createState() => _TextAndVoiceFieldState();
 }
 
-class _TextAndVoiceFieldState extends ConsumerState<TextAndVoiceField> {
+class _TextAndVoiceFieldState extends State<TextAndVoiceField> {
+  late SharedPreferences prefs;
+  var _initUID = '';
+  var _initAPIKey = '';
+  var _initUsername = '';
+
   InputMode _inputMode = InputMode.voice;
   final _messageController = TextEditingController();
   var _isReplying = false;
@@ -27,6 +32,7 @@ class _TextAndVoiceFieldState extends ConsumerState<TextAndVoiceField> {
   @override
   void initState() {
     voiceHandler.initSpeech();
+    _getLocalValue();
     super.initState();
   }
 
@@ -34,6 +40,15 @@ class _TextAndVoiceFieldState extends ConsumerState<TextAndVoiceField> {
   void dispose() {
     _messageController.dispose();
     super.dispose();
+  }
+
+  void _getLocalValue() async {
+    prefs = await SharedPreferences.getInstance();
+    setState(() {
+      _initAPIKey = prefs.getString(ShareKeys.APIkey)!;
+      _initUsername = prefs.getString(ShareKeys.Username)!;
+      _initUID = prefs.getString(ShareKeys.UID)!;
+    });
   }
 
   @override
@@ -63,6 +78,10 @@ class _TextAndVoiceFieldState extends ConsumerState<TextAndVoiceField> {
             final message = _messageController.text;
             _messageController.clear();
             sendTextMessage(message);
+            setState(() {
+              _messageController.clear();
+              setInputMode(InputMode.voice);
+            });
           },
           sendVoiceMessage: () {
             sendVoiceMessage();
@@ -90,32 +109,38 @@ class _TextAndVoiceFieldState extends ConsumerState<TextAndVoiceField> {
       setListeningState(true);
       final result = await voiceHandler.startListening();
       setListeningState(false);
-      sendTextMessage(result);
+      setState(() {
+        _messageController.text = result;
+        setInputMode(InputMode.text);
+      });
     }
   }
 
-  void sendTextMessage(String message) {
+  void sendTextMessage(String message) async {
     setReplyingState(true);
-
-    addToChatList(message, true, DateTime.now().toString());
-    addToChatList('Typing...', false, 'typing');
+    await FirebaseFirestore.instance
+        .collection('users')
+        .doc(_initUID)
+        .collection("chat")
+        .add({
+      "text": message,
+      "createdAt": Timestamp.now(),
+      "isUser": true,
+    });
 
     Future.delayed(const Duration(milliseconds: 2000), () {
-      addToChatList(
-          'Bot Response: ' + message, false, DateTime.now().toString());
       print('delay');
       setReplyingState(false);
-      removeTyping();
     });
-  }
-
-  void addToChatList(String message, bool isUser, String id) {
-    final chats = ref.read(chatsProvider.notifier);
-    chats.add(ChatModel(
-      id: id,
-      message: message,
-      isUser: isUser,
-    ));
+    await FirebaseFirestore.instance
+        .collection('users')
+        .doc(_initUID)
+        .collection("chat")
+        .add({
+      "text": 'Bot Response: ' + message,
+      "createdAt": Timestamp.now(),
+      "isUser": false,
+    });
   }
 
   void setReplyingState(bool isReplying) {
@@ -128,10 +153,5 @@ class _TextAndVoiceFieldState extends ConsumerState<TextAndVoiceField> {
     setState(() {
       _isListening = isListening;
     });
-  }
-
-  void removeTyping() {
-    final chats = ref.read(chatsProvider.notifier);
-    chats.removeTyping();
   }
 }

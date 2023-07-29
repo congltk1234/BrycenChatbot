@@ -1,13 +1,26 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_tts/flutter_tts.dart';
 
 class ChatItem extends StatelessWidget {
-  final String text;
-  final bool isUser;
-  const ChatItem({
+  ChatItem({
     super.key,
     required this.text,
     required this.isUser,
   });
+  final String text;
+  final bool isUser;
+
+  FlutterTts flutterT2S = FlutterTts();
+  bool _isSpeaking = false;
+
+  void _speak() async {
+    _isSpeaking = !_isSpeaking;
+    if (_isSpeaking) {
+      await flutterT2S.speak(text);
+    } else {
+      flutterT2S.stop();
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -32,8 +45,8 @@ class ChatItem extends StatelessWidget {
                     ? Theme.of(context).colorScheme.secondary
                     : Colors.grey.shade800,
                 borderRadius: BorderRadius.only(
-                  topLeft: Radius.circular(15),
-                  topRight: Radius.circular(15),
+                  topLeft: const Radius.circular(15),
+                  topRight: const Radius.circular(15),
                   bottomLeft: Radius.circular(isUser ? 15 : 0),
                   bottomRight: Radius.circular(isUser ? 0 : 15),
                 )),
@@ -44,8 +57,12 @@ class ChatItem extends StatelessWidget {
               ),
             ),
           ),
-          // if (isUser) const SizedBox(width: 15),
-          // if (isUser) ProfileContainer(isUser: isUser),
+          if (!isUser)
+            IconButton(
+              onPressed: _speak,
+              icon: Icon(_isSpeaking ? Icons.volume_mute : Icons.volume_up),
+              // color: Colors.white,
+            )
         ],
       ),
     );
@@ -70,8 +87,8 @@ class ProfileContainer extends StatelessWidget {
             ? Theme.of(context).colorScheme.secondary
             : Colors.grey.shade800,
         borderRadius: BorderRadius.only(
-          topLeft: Radius.circular(10),
-          topRight: Radius.circular(10),
+          topLeft: const Radius.circular(10),
+          topRight: const Radius.circular(10),
           bottomLeft: Radius.circular(isUser ? 0 : 15),
           bottomRight: Radius.circular(isUser ? 15 : 0),
         ),

@@ -1,9 +1,9 @@
-import 'package:brycen_chatbot/providers/chat_provider.dart';
+import 'package:brycen_chatbot/values/share_keys.dart';
 import 'package:brycen_chatbot/widget/app_bar.dart';
-import 'package:brycen_chatbot/widget/chat/chat_item.dart';
+import 'package:brycen_chatbot/widget/chat/chat_messages.dart';
 import 'package:brycen_chatbot/widget/chat/text_and_voice.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class ChatScreen extends StatefulWidget {
   const ChatScreen({super.key});
@@ -16,24 +16,37 @@ class ChatScreen extends StatefulWidget {
 }
 
 class _ChatScreenState extends State<ChatScreen> {
+  late SharedPreferences prefs;
+  String _initUID = '';
+  var _initAPIKey = '';
+  var _initUsername = '';
+
+  @override
+  void initState() {
+    _getLocalValue();
+    super.initState();
+  }
+
+  void _getLocalValue() async {
+    prefs = await SharedPreferences.getInstance();
+    setState(() {
+      _initAPIKey = prefs.getString(ShareKeys.APIkey) ?? '';
+      _initUsername = prefs.getString(ShareKeys.Username) ?? '';
+      _initUID = prefs.getString(ShareKeys.UID) ?? '';
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: const ConfigAppBar(title: 'Chat Screen'),
       body: Column(
         children: [
+          ////// Load Data from fireBase///
           Expanded(
-            child: Consumer(builder: (context, ref, child) {
-              final chats = ref.watch(chatsProvider).reversed.toList();
-              return ListView.builder(
-                reverse: true,
-                itemCount: chats.length,
-                itemBuilder: (context, index) => ChatItem(
-                  text: chats[index].message,
-                  isUser: chats[index].isUser,
-                ),
-              );
-            }),
+            child: ChatMessages(
+              initUID: _initUID,
+            ),
           ),
           const Padding(
             padding: EdgeInsets.all(12.0),

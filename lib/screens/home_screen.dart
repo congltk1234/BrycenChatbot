@@ -32,7 +32,7 @@ class _HomeScreenState extends State<HomeScreen> {
   bool _isValid = false;
   bool _isLoading = false;
   bool passwordVisible = true;
-  var _isExpired = true;
+  var _isExpired = false;
   bool? _isAPI;
   String? errorText;
   //
@@ -41,7 +41,7 @@ class _HomeScreenState extends State<HomeScreen> {
   void initState() {
     _getLocalValue();
     super.initState();
-    print(_initUID);
+    // print(_initUID);
     setState(() {
       _isLoading = false;
     });
@@ -115,6 +115,7 @@ class _HomeScreenState extends State<HomeScreen> {
       final uid = await FirebaseFirestore.instance
           .collection('users')
           .where('APIkey', isEqualTo: _enteredAPIKey.text)
+          .where('Username', isEqualTo: _enteredUsername.text)
           .get();
 
       prefs.setString(ShareKeys.UID, uid.docs.first.reference.id);
