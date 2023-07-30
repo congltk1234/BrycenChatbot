@@ -47,6 +47,8 @@ dependencies:
   animated_text_kit: ^4.2.2
   intl: ^0.18.1
   langchain_openai: ^0.0.3
+  flutter_markdown: ^0.6.17
+  google_fonts: ^5.1.0
 
 dev_dependencies:
   flutter_test:

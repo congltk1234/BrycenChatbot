@@ -65,8 +65,10 @@ class _HomeScreenState extends State<HomeScreen> {
       print(message['choices'][0]['text']);
       return true;
     } else {
+      // ignore: use_build_context_synchronously
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
+          // ignore: use_build_context_synchronously
           backgroundColor: Theme.of(context).colorScheme.error,
           content: Text(message['error']['message']),
         ),
@@ -81,6 +83,7 @@ class _HomeScreenState extends State<HomeScreen> {
       await prefs.setString(ShareKeys.APIkey, _enteredAPIKey.text);
       await prefs.setString(ShareKeys.Username, _enteredUsername.text);
       print('Accept');
+      // ignore: use_build_context_synchronously
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           backgroundColor: Colors.green,

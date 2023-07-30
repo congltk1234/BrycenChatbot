@@ -1,69 +1,132 @@
+import 'package:brycen_chatbot/firebase_options.dart';
+import 'package:brycen_chatbot/widget/chat/chat_item.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:langchain/langchain.dart';
 import 'package:langchain_openai/langchain_openai.dart';
 
 void main() async {
-  final llm = ChatOpenAI(
-      apiKey: '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',
-      temperature: 0);
-  ConversationBufferMemory memo = ConversationBufferMemory();
-  final chatData = await FirebaseFirestore.instance
-      .collection('users')
-      .doc('VC0AAVpP10HLI3ghTO5D')
-      .collection('chat')
-      .get();
-  for (final item in chatData.docs) {
-    await memo.saveContext(
-        inputValues: {'Human': item.data()['humanChat']},
-        outputValues: {'AI': item.data()['aiChat']});
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
+
+  runApp(const MyApp());
+}
+
+class MyApp extends StatelessWidget {
+  const MyApp({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'Intern Chatbot',
+      home: GetUserName(),
+    );
   }
-  var conversation = ConversationChain(llm: llm, memory: memo);
-  // final result = await conversation.call(msg, returnOnlyOutputs: true);
-  // chatList.add(result['response']);
+}
 
-  final prompt = PromptTemplate.fromTemplate('');
+class GetUserName extends StatefulWidget {
+  const GetUserName({super.key});
 
-  final memory = ConversationBufferMemory(memoryKey: 'context');
-  // await memory.saveContext(
-  //     inputValues: {'User': 'Hello'}, outputValues: {'bot': 'Res'});
-  // await memory
-  //     .saveContext(inputValues: {'User': 'bar'}, outputValues: {'bot': 'foo'});
+  @override
+  State<GetUserName> createState() => _GetUserNameState();
+}
 
-  // final chain = LLMChain(
-  // llm: llm_test,
-  //   prompt: prompt,
-  //   memory: memory,
-  // );
+class _GetUserNameState extends State<GetUserName> {
+  @override
+  Widget build(BuildContext context) {
+    return StreamBuilder(
+      stream: FirebaseFirestore.instance
+          .collection("users")
+          .doc('VC0AAVpP10HLI3ghTO5D')
+          .collection('chat')
+          .orderBy(
+            "createdAt",
+            descending: true,
+          )
+          .snapshots(),
+      builder: (ctx, chatSnapshots) {
+        if (chatSnapshots.hasError) {
+          return Scaffold(
+            body: Expanded(
+              child: Center(
+                child: Text('Error: ${chatSnapshots.error}'),
+              ),
+            ),
+          );
+        }
+        switch (chatSnapshots.connectionState) {
+          case ConnectionState.waiting:
+            return const Center(
+              child: CircularProgressIndicator(),
+            );
+          case ConnectionState.none:
+            return const Expanded(
+              child: Center(
+                child: Text('No Data'),
+              ),
+            );
+          case ConnectionState.active:
+            final loadedMessages = List.from(chatSnapshots.data!.docs.reversed);
+            final lengthHistory = loadedMessages.length;
+            print(lengthHistory);
+            responseChain(loadedMessages);
+            return Scaffold(
+              body: Column(
+                children: [
+                  Expanded(
+                    child: ListView.builder(
+                        itemCount: lengthHistory,
+                        itemBuilder: (context, index) {
+                          final chatMessage = loadedMessages[index].data();
 
-  // final query = 'meomeomeo';
-  // final res = await chain.run(query);
-  // print(res);
-  // print(chain.prompt.format({'adjective': query, 'verb': 'dick'}));
-  // print(chain.prompt.format({'userInput': query}));
-  // final chatPrompt = ChatPromptTemplate.fromTemplate(
-  //   "Hello {foo}, I'm {bar}. Thanks for the {context}",
-  //   partialVariables: {'foo': 'foo', 'bar': 'bar'},
-  // );
-  // final prompt = chatPrompt.format({'context': 'Party'});
+                          return ChatItem(
+                            humanMessage: chatMessage["Human"],
+                            botResponse: chatMessage["AI"],
+                            tokens: chatMessage["totalTokens"],
+                            timeStamp: DateFormat.yMMMd().add_jm().format(
+                                DateTime.parse(chatMessage["createdAt"]
+                                    .toDate()
+                                    .toString())),
+                            shouldAnimate: lengthHistory < 1
+                                ? lengthHistory == index
+                                : lengthHistory - 1 == index,
+                          );
+                        }),
+                  ),
+                ],
+              ),
+            );
+          case ConnectionState.done:
+            break;
+        }
+        return const Center(child: Text('error'));
+      },
+    );
+  }
 
-  // final promptTemplate = PromptTemplate.fromTemplate(
-  //   'tell me a joke about {subject}',
-  // );
-  // // final prompt = promptTemplate.format({'subject': 'AI'});
-  // final result = await llm_test(prompt);
+  void responseChain(List<dynamic> loadedMessages) async {
+    final llm = ChatOpenAI(
+        apiKey:
+            // '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   x',
+            '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',
+        temperature: 0);
+    // .generate([ChatMessage.human('Flutter là gì trong 3 câu.')]);
+    // print(llm);
+    var memo = ConversationBufferMemory();
+    for (final item in loadedMessages) {
+      memo.saveContext(
+          inputValues: {'Human': item.data()['Human']},
+          outputValues: {'AI': item.data()['AI']});
+    }
 
-  // final chain_conv = ConversationChain(
-  //   llm: llm_test,
-  //   memory: memory,
-  // );
-  // var res = await chain.run('Hello world!');
+    var conversation = ConversationChain(llm: llm, memory: memo);
+    // print(conversation.memory!.loadMemoryVariables());
 
-  // final res =
-  //     await chain.run({'topic': 'sport', 'userInput': 'aaaaaaaaaaaaaaaaaaaa!'});
-  // print(res);
-
-  // final a = await chain.memory!.loadMemoryVariables();
-
-  // print(a);
-  // Why did the AI go on a diet? Because it had too many bytes!
+    final result = await conversation.run('Flutter là gì trong 3 câu.');
+    print(result);
+  }
 }

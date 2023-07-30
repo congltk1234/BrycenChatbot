@@ -75,14 +75,6 @@ class _ChatScreenState extends State<ChatScreen> {
             )
             .snapshots(),
         builder: (ctx, chatSnapshots) {
-          // print(chatSnapshots.connectionState);
-          // if (chatSnapshots.connectionState == ConnectionState.waiting) {
-          //   return const Center(
-          //     child: CircularProgressIndicator(
-          //       backgroundColor: Color.fromARGB(255, 255, 246, 246),
-          //     ),
-          //   );
-          // }
           if (chatSnapshots.hasError) {
             return Scaffold(
               appBar: const ConfigAppBar(title: 'Chat Screen'),
@@ -136,11 +128,17 @@ class _ChatScreenState extends State<ChatScreen> {
               final loadedMessages =
                   List.from(chatSnapshots.data!.docs.reversed);
               final lengthHistory = loadedMessages.length;
-              // memory = lengthHistory >= (k_memory)
-              //     ? loadedMessages.sublist(lengthHistory - k_memory, lengthHistory)
-              //     : loadedMessages.sublist(0, lengthHistory - 1);
+              memory = lengthHistory >= (k_memory)
+                  ? loadedMessages.sublist(
+                      lengthHistory - k_memory, lengthHistory)
+                  : loadedMessages.sublist(0, lengthHistory - 1);
 
               _memoryBuffer = '';
+              for (var msg in memory) {
+                _memoryBuffer =
+                    "$_memoryBuffer\nHuman:${msg.data()['Human']}\nAI:${msg.data()['AI']}";
+              }
+              print(_memoryBuffer);
 
               if (_needsScroll) {
                 WidgetsBinding.instance
