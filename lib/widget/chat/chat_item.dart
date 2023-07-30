@@ -5,16 +5,17 @@ import 'package:flutter_tts/flutter_tts.dart';
 
 // ignore: must_be_immutable
 class ChatItem extends StatelessWidget {
-  ChatItem(
-      {super.key,
-      required this.text,
-      required this.isUser,
-      required this.timeStamp,
-      this.shouldAnimate = false,
-      this.tokens = 0});
-  final String text;
+  ChatItem({
+    super.key,
+    required this.humanMessage,
+    required this.botResponse,
+    required this.timeStamp,
+    required this.tokens,
+    this.shouldAnimate = false,
+  });
+  final String humanMessage;
+  final String botResponse;
   final String timeStamp;
-  final bool isUser;
   final bool shouldAnimate;
   final int tokens;
 
@@ -24,7 +25,7 @@ class ChatItem extends StatelessWidget {
   void _speak() async {
     _isSpeaking = !_isSpeaking;
     if (_isSpeaking) {
-      await flutterT2S.speak(text);
+      await flutterT2S.speak(botResponse);
     } else {
       flutterT2S.stop();
     }
@@ -39,28 +40,66 @@ class ChatItem extends StatelessWidget {
       ),
       child: Column(
         children: [
-          if (isUser) Text(timeStamp),
+          /// TimeStamp
+          Text(timeStamp),
+
+          /// User Message
+          const SizedBox(height: 5),
           Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisAlignment:
-                isUser ? MainAxisAlignment.end : MainAxisAlignment.start,
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            crossAxisAlignment: CrossAxisAlignment.end,
             children: [
-              if (!isUser) ProfileContainer(isUser: isUser),
-              if (!isUser) const SizedBox(width: 5),
+              Row(
+                // mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const SizedBox(width: 45),
+                  Text(
+                    'Used Tokens: ${tokens.toString()}',
+                    style: const TextStyle(fontStyle: FontStyle.italic),
+                  ),
+                ],
+              ),
               Container(
                 padding: const EdgeInsets.all(12),
                 constraints: BoxConstraints(
-                    maxWidth: MediaQuery.of(context).size.width *
-                        (!isUser ? 0.7 : 0.5)),
+                    maxWidth: MediaQuery.of(context).size.width * 0.5),
                 decoration: BoxDecoration(
-                    color: isUser
-                        ? Theme.of(context).colorScheme.secondary
-                        : Colors.grey[350],
-                    borderRadius: BorderRadius.only(
-                      topLeft: const Radius.circular(15),
-                      topRight: const Radius.circular(15),
-                      bottomLeft: Radius.circular(isUser ? 15 : 0),
-                      bottomRight: Radius.circular(isUser ? 0 : 15),
+                    color: Theme.of(context).colorScheme.secondary,
+                    borderRadius: const BorderRadius.only(
+                      topLeft: Radius.circular(15),
+                      topRight: Radius.circular(15),
+                      bottomLeft: Radius.circular(15),
+                      bottomRight: Radius.circular(0),
+                    )),
+                child: Text(
+                  humanMessage,
+                  style: TextStyle(
+                    color: Theme.of(context).colorScheme.onSecondary,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 10),
+
+          /// Bot Messages
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisAlignment: MainAxisAlignment.start,
+            children: [
+              const ProfileContainer(),
+              const SizedBox(width: 5),
+              Container(
+                padding: const EdgeInsets.all(12),
+                constraints: BoxConstraints(
+                    maxWidth: MediaQuery.of(context).size.width * 0.7),
+                decoration: BoxDecoration(
+                    color: Colors.grey[350],
+                    borderRadius: const BorderRadius.only(
+                      topLeft: Radius.circular(15),
+                      topRight: Radius.circular(15),
+                      bottomLeft: Radius.circular(0),
+                      bottomRight: Radius.circular(15),
                     )),
                 child: shouldAnimate
                     ? AnimatedTextKit(
@@ -69,22 +108,20 @@ class ChatItem extends StatelessWidget {
                         displayFullTextOnTap: true,
                         totalRepeatCount: 1,
                         animatedTexts: [
-                          TyperAnimatedText(text.trim(),
+                          TyperAnimatedText(botResponse.trim(),
                               textStyle: const TextStyle(
                                   // color: Colors.black,
                                   )),
                         ],
                       )
                     : Text(
-                        text,
-                        style: TextStyle(
-                          color: isUser
-                              ? Theme.of(context).colorScheme.onSecondary
-                              : Colors.black,
+                        botResponse.trim(),
+                        style: const TextStyle(
+                          color: Colors.black,
                         ),
                       ),
               ),
-              if (!isUser && (text.length > 40))
+              if (botResponse.length > 40)
                 Column(
                   children: [
                     IconButton(
@@ -95,7 +132,7 @@ class ChatItem extends StatelessWidget {
                     GestureDetector(
                       child: const Icon(Icons.copy),
                       onTap: () {
-                        Clipboard.setData(ClipboardData(text: text));
+                        Clipboard.setData(ClipboardData(text: botResponse));
                         ScaffoldMessenger.of(context)
                             .showSnackBar(const SnackBar(
                           content: Text('copied'),
@@ -106,7 +143,7 @@ class ChatItem extends StatelessWidget {
                     ),
                   ],
                 ),
-              if (!isUser && (text.length < 40))
+              if (botResponse.length < 40)
                 Row(
                   children: [
                     IconButton(
@@ -117,7 +154,7 @@ class ChatItem extends StatelessWidget {
                     GestureDetector(
                       child: const Icon(Icons.copy),
                       onTap: () {
-                        Clipboard.setData(ClipboardData(text: text));
+                        Clipboard.setData(ClipboardData(text: botResponse));
                         ScaffoldMessenger.of(context)
                             .showSnackBar(const SnackBar(
                           content: Text('copied'),
@@ -130,16 +167,6 @@ class ChatItem extends StatelessWidget {
                 ),
             ],
           ),
-          if (tokens != 0)
-            Row(
-              children: [
-                const SizedBox(width: 50),
-                Text(
-                  'Used Tokens: ${tokens.toString()}',
-                  style: const TextStyle(fontStyle: FontStyle.italic),
-                ),
-              ],
-            ),
         ],
       ),
     );
@@ -149,10 +176,7 @@ class ChatItem extends StatelessWidget {
 class ProfileContainer extends StatelessWidget {
   const ProfileContainer({
     super.key,
-    required this.isUser,
   });
-
-  final bool isUser;
 
   @override
   Widget build(BuildContext context) {

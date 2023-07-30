@@ -23,8 +23,9 @@ class _ChatScreenState extends State<ChatScreen> {
   String _initAPIKey = '';
   String _initUsername = '';
 
-  int k_memory = 6;
+  int k_memory = 3;
   var _memoryBuffer = '';
+  late List<dynamic> memory;
 
   late ScrollController _listScrollController;
   bool _needsScroll = true;
@@ -63,138 +64,131 @@ class _ChatScreenState extends State<ChatScreen> {
 
   @override
   Widget build(BuildContext context) {
-    // FirebaseFirestore.instance.doc('users/$userID').;
     return StreamBuilder(
-      stream: FirebaseFirestore.instance
-          .collection("users")
-          .doc(_initUID)
-          .collection('chat')
-          .orderBy(
-            "createdAt",
-            descending: true,
-          )
-          .snapshots(),
-      builder: (ctx, chatSnapshots) {
-        if (chatSnapshots.connectionState == ConnectionState.waiting) {
-          return const Center(
-            child: CircularProgressIndicator(),
-          );
-        }
-        if (!chatSnapshots.hasData || chatSnapshots.data!.docs.isEmpty) {
-          return Scaffold(
-            appBar: const ConfigAppBar(title: 'Chat Screen'),
-            body: Column(
-              children: [
-                const Expanded(
-                  child: Center(
-                    child: Text('No messages found.'),
-                  ),
+        stream: FirebaseFirestore.instance
+            .collection("users")
+            .doc(_initUID)
+            .collection('chat')
+            .orderBy(
+              "createdAt",
+              descending: true,
+            )
+            .snapshots(),
+        builder: (ctx, chatSnapshots) {
+          // print(chatSnapshots.connectionState);
+          // if (chatSnapshots.connectionState == ConnectionState.waiting) {
+          //   return const Center(
+          //     child: CircularProgressIndicator(
+          //       backgroundColor: Color.fromARGB(255, 255, 246, 246),
+          //     ),
+          //   );
+          // }
+          if (chatSnapshots.hasError) {
+            return Scaffold(
+              appBar: const ConfigAppBar(title: 'Chat Screen'),
+              body: Expanded(
+                child: Center(
+                  child: Text('Error: ${chatSnapshots.error}'),
                 ),
-                Padding(
-                  padding: const EdgeInsets.all(12.0),
-                  child: TextAndVoiceField(
-                    uid: _initUID,
-                    userName: _initUsername,
-                    apiKey: _initAPIKey,
-                    memory: _memoryBuffer,
-                  ),
-                ),
-                const SizedBox(height: 8),
-              ],
-            ),
-          );
-        }
-        if (chatSnapshots.hasError) {
-          return Scaffold(
-            appBar: const ConfigAppBar(title: 'Chat Screen'),
-            body: Column(
-              children: [
-                const Expanded(
-                  child: Center(
-                    child: Text('Something went wrong...'),
-                  ),
-                ),
-                Padding(
-                  padding: const EdgeInsets.all(12.0),
-                  child: TextAndVoiceField(
-                    uid: _initUID,
-                    userName: _initUsername,
-                    apiKey: _initAPIKey,
-                    memory: _memoryBuffer,
-                  ),
-                ),
-                const SizedBox(height: 8),
-              ],
-            ),
-          );
-        }
-        final loadedMessages = List.from(chatSnapshots.data!.docs.reversed);
-        final lengthHistory = loadedMessages.length;
-        final memory = lengthHistory >= (k_memory)
-            ? loadedMessages.sublist(
-                lengthHistory - k_memory + 2, lengthHistory)
-            : loadedMessages.sublist(0, lengthHistory - 2);
-        for (var msg in memory) {
-          if (msg.data()['isUser']) {
-            _memoryBuffer = "$_memoryBuffer\nHuman:";
-          } else {
-            _memoryBuffer = "$_memoryBuffer\nAI:";
+              ),
+            );
           }
-          _memoryBuffer = _memoryBuffer + msg.data()['text'];
-        }
-
-        if (_needsScroll) {
-          WidgetsBinding.instance
-              .addPostFrameCallback((_) => scrollListToEND());
-          // _needsScroll = false;
-        }
-        return Scaffold(
-          appBar: const ConfigAppBar(title: 'Chat Screen'),
-          body: Column(
-            children: [
-              Expanded(
-                child: ListView.builder(
-                    controller: _listScrollController,
-                    itemCount: lengthHistory,
-                    itemBuilder: (context, index) {
-                      final chatMessage = loadedMessages[index].data();
-                      // if (lengthHistory - 1 == index && animated) {
-                      //   setState(() {
-                      //     animated = false;
-                      //   });
-                      //   return ChatItem(
-                      //     text: chatMessage["text"],
-                      //     isUser: chatMessage["isUser"],
-                      //     tokens: chatMessage["totalTokens"],
-                      //     shouldAnimate: true,
-                      //   );
-                      // }
-                      return ChatItem(
-                        text: chatMessage["text"],
-                        isUser: chatMessage["isUser"],
-                        tokens: chatMessage["totalTokens"],
-                        timeStamp:
-                            // (chatMessage["createdAt"] as Timestamp).toDate(),
-                            DateFormat.yMMMd().add_jm().format(DateTime.parse(
-                                chatMessage["createdAt"].toDate().toString())),
-                        shouldAnimate: lengthHistory - 1 == index,
-                      );
-                    }),
-              ),
-              Padding(
-                padding: const EdgeInsets.all(12.0),
-                child: TextAndVoiceField(
-                  uid: _initUID,
-                  userName: _initUsername,
-                  apiKey: _initAPIKey,
-                  memory: _memoryBuffer,
+          switch (chatSnapshots.connectionState) {
+            case ConnectionState.waiting:
+              return const Center(
+                child: CircularProgressIndicator(
+                  backgroundColor: Color.fromARGB(255, 255, 246, 246),
                 ),
-              ),
-              const SizedBox(height: 8),
-            ],
-          ),
-        );
-      },
-    );
+              );
+            case ConnectionState.none:
+              return const Expanded(
+                child: Center(
+                  child: Text('No Data'),
+                ),
+              );
+            case ConnectionState.active:
+              if (!chatSnapshots.hasData || chatSnapshots.data!.docs.isEmpty) {
+                return Scaffold(
+                  appBar: const ConfigAppBar(title: 'Chat Screen'),
+                  body: Column(
+                    children: [
+                      const Expanded(
+                        child: Center(
+                          child: Text('No messages found.'),
+                        ),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.all(12.0),
+                        child: TextAndVoiceField(
+                          uid: _initUID,
+                          userName: _initUsername,
+                          apiKey: _initAPIKey,
+                          memory: _memoryBuffer,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                    ],
+                  ),
+                );
+              }
+
+              ////////// Handle OutofList error
+              final loadedMessages =
+                  List.from(chatSnapshots.data!.docs.reversed);
+              final lengthHistory = loadedMessages.length;
+              // memory = lengthHistory >= (k_memory)
+              //     ? loadedMessages.sublist(lengthHistory - k_memory, lengthHistory)
+              //     : loadedMessages.sublist(0, lengthHistory - 1);
+
+              _memoryBuffer = '';
+
+              if (_needsScroll) {
+                WidgetsBinding.instance
+                    .addPostFrameCallback((_) => scrollListToEND());
+                // _needsScroll = false;
+              }
+              return Scaffold(
+                appBar: const ConfigAppBar(title: 'Chat Screen'),
+                body: Column(
+                  children: [
+                    Expanded(
+                      child: ListView.builder(
+                          controller: _listScrollController,
+                          itemCount: lengthHistory,
+                          itemBuilder: (context, index) {
+                            final chatMessage = loadedMessages[index].data();
+
+                            return ChatItem(
+                              humanMessage: chatMessage["Human"],
+                              botResponse: chatMessage["AI"],
+                              tokens: chatMessage["totalTokens"],
+                              timeStamp: DateFormat.yMMMd().add_jm().format(
+                                  DateTime.parse(chatMessage["createdAt"]
+                                      .toDate()
+                                      .toString())),
+                              shouldAnimate: lengthHistory < 1
+                                  ? lengthHistory == index
+                                  : lengthHistory - 1 == index,
+                            );
+                          }),
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.all(12.0),
+                      child: TextAndVoiceField(
+                        uid: _initUID,
+                        userName: _initUsername,
+                        apiKey: _initAPIKey,
+                        memory: _memoryBuffer,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                  ],
+                ),
+              );
+            case ConnectionState.done:
+              break;
+          }
+          return Center(child: Text('error'));
+        });
   }
 }

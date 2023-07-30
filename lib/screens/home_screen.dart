@@ -30,21 +30,16 @@ class _HomeScreenState extends State<HomeScreen> {
   var _initUsername = '';
 
   bool _isValid = false;
-  bool _isLoading = false;
+  // bool _isLoading = false;
   bool passwordVisible = true;
   var _isExpired = false;
   bool? _isAPI;
   String? errorText;
-  //
-  //
+
   @override
   void initState() {
     _getLocalValue();
     super.initState();
-    // print(_initUID);
-    setState(() {
-      _isLoading = false;
-    });
   }
 
   Future<bool> checkApiKey(String apiKey) async {
@@ -61,6 +56,7 @@ class _HomeScreenState extends State<HomeScreen> {
         "temperature": 0,
       }),
     );
+    // ignore: use_build_context_synchronously
     ScaffoldMessenger.of(context).clearSnackBars();
 
     final message = jsonDecode(response.body);
@@ -82,8 +78,8 @@ class _HomeScreenState extends State<HomeScreen> {
   Future<void> _submit() async {
     if (_formKey.currentState!.validate()) {
       _formKey.currentState!.save();
-      prefs.setString(ShareKeys.APIkey, _enteredAPIKey.text);
-      prefs.setString(ShareKeys.Username, _enteredUsername.text);
+      await prefs.setString(ShareKeys.APIkey, _enteredAPIKey.text);
+      await prefs.setString(ShareKeys.Username, _enteredUsername.text);
       print('Accept');
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
@@ -93,14 +89,34 @@ class _HomeScreenState extends State<HomeScreen> {
       );
 
       // send to fitebase
+      ////// Handle login
+      print('Kiểm userID local');
+      setState(() {
+        _isExpired = false;
+      });
       if (_initUID == '') {
-        await FirebaseFirestore.instance.collection('users').add({
-          'createdAt': Timestamp.now(),
-          'modifiedAt': Timestamp.now(),
-          'Username': _enteredUsername.text,
-          'APIkey': _enteredAPIKey.text,
-          // 'status': true,
-        });
+        try {
+          final uid = await FirebaseFirestore.instance
+              .collection('users')
+              .where('APIkey', isEqualTo: _enteredAPIKey.text)
+              .where('Username', isEqualTo: _enteredUsername.text)
+              .get();
+
+          await prefs.setString(ShareKeys.UID, uid.docs.first.reference.id);
+          setState(() {
+            _initUID = uid.docs.first.reference.id;
+            print('Lưu userID đã có');
+          });
+          return;
+        } catch (e) {
+          await FirebaseFirestore.instance.collection('users').add({
+            'createdAt': Timestamp.now(),
+            'modifiedAt': Timestamp.now(),
+            'Username': _enteredUsername.text,
+            'APIkey': _enteredAPIKey.text,
+          });
+          print('Thêm mới userID');
+        }
       } else {
         await FirebaseFirestore.instance
             .collection('users')
@@ -109,8 +125,8 @@ class _HomeScreenState extends State<HomeScreen> {
           'modifiedAt': Timestamp.now(),
           'Username': _enteredUsername.text,
           'APIkey': _enteredAPIKey.text,
-          // 'status': true,
         });
+        print('Cập nhật Username/Key mới');
       }
       final uid = await FirebaseFirestore.instance
           .collection('users')
@@ -118,9 +134,10 @@ class _HomeScreenState extends State<HomeScreen> {
           .where('Username', isEqualTo: _enteredUsername.text)
           .get();
 
-      prefs.setString(ShareKeys.UID, uid.docs.first.reference.id);
+      await prefs.setString(ShareKeys.UID, uid.docs.first.reference.id);
       setState(() {
         _initUID = uid.docs.first.reference.id;
+        print('Lưu userID vừa tạo vào local');
       });
       return;
     }
@@ -146,7 +163,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    var UserForm = Padding(
+    var userForm = Padding(
       padding: const EdgeInsets.symmetric(horizontal: 40),
       child: Form(
         key: _formKey,
@@ -244,7 +261,7 @@ class _HomeScreenState extends State<HomeScreen> {
     );
 
     if (_isValid) {
-      UserForm = Padding(
+      userForm = Padding(
         padding: const EdgeInsets.symmetric(horizontal: 60),
         child: Column(
           children: [
@@ -308,12 +325,12 @@ class _HomeScreenState extends State<HomeScreen> {
     }
 
     return Scaffold(
-      appBar: ConfigAppBar(title: 'Home Screen'),
+      appBar: const ConfigAppBar(title: 'Home Screen'),
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
-            UserForm,
+            userForm,
             if (_isValid)
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,

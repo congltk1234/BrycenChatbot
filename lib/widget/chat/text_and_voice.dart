@@ -15,18 +15,20 @@ class TextAndVoiceField extends StatefulWidget {
   final String _initAPIKey;
   final String _initUsername;
   final String _memory;
+  // final List<dynamic> _memory;
 
-  const TextAndVoiceField({
-    super.key,
-    required String uid,
-    required String apiKey,
-    required String userName,
-    required String memory,
-  })  : _initUID = uid,
+  const TextAndVoiceField(
+      {super.key,
+      required String uid,
+      required String apiKey,
+      required String userName,
+      required String memory
+      // required List<dynamic> memory,
+      })
+      : _initUID = uid,
         _initAPIKey = apiKey,
         _initUsername = userName,
         _memory = memory;
-
   @override
   State<TextAndVoiceField> createState() => _TextAndVoiceFieldState();
 }
@@ -117,26 +119,13 @@ class _TextAndVoiceFieldState extends State<TextAndVoiceField> {
 
   void sendTextMessage(String message) async {
     setReplyingState(true);
-    await FirebaseFirestore.instance
-        .collection('users')
-        .doc(widget._initUID)
-        .collection("chat")
-        .add({
-      "text": message,
-      "createdAt": Timestamp.now(),
-      "isUser": true,
-      'totalTokens': 0,
-    });
-
 // prompt
-//
     final prompt =
-        "Here's a conversation between user ${widget._initUsername} with AI: ${widget._memory} .\n The User's Prompt: $message";
+        "Here's a conversation between user ${widget._initUsername} with AI: ${widget._memory} .\n From given context, response this message: $message";
 
     /// Bot Response Chat GPT here
     OpenAI.apiKey = widget._initAPIKey;
-
-    OpenAIChatCompletionModel chatCompletion =
+    final OpenAIChatCompletionModel chatCompletion =
         await OpenAI.instance.chat.create(
       model: "gpt-3.5-turbo",
       messages: [
@@ -152,12 +141,11 @@ class _TextAndVoiceFieldState extends State<TextAndVoiceField> {
         .doc(widget._initUID)
         .collection("chat")
         .add({
-      "text": chatCompletion.choices[0].message.content,
       "createdAt": Timestamp.now(),
-      "isUser": false,
+      "Human": message,
+      "AI": chatCompletion.choices[0].message.content,
       'totalTokens': chatCompletion.usage.totalTokens,
     });
-    print(chatCompletion.usage.totalTokens);
 
 //// Update memory
     await FirebaseFirestore.instance

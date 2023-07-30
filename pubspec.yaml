@@ -43,10 +43,10 @@ dependencies:
   # flutter_riverpod: ^2.3.6
   speech_to_text: ^6.3.0
   flutter_tts: ^3.7.0
-  flutter_gpt_tokenizer: ^0.1.0
   dart_openai: ^4.0.0
   animated_text_kit: ^4.2.2
   intl: ^0.18.1
+  langchain_openai: ^0.0.3
 
 dev_dependencies:
   flutter_test:
