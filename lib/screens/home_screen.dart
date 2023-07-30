@@ -152,6 +152,16 @@ class _HomeScreenState extends State<HomeScreen> {
         key: _formKey,
         child: Column(
           children: [
+            Container(
+              margin: const EdgeInsets.only(
+                top: 30,
+                bottom: 20,
+                left: 20,
+                right: 20,
+              ),
+              width: 200,
+              child: Image.asset('assets/images/brycen_square.png'),
+            ),
             TextFormField(
               autofocus: true,
               textCapitalization: TextCapitalization.words,
@@ -238,6 +248,7 @@ class _HomeScreenState extends State<HomeScreen> {
         padding: const EdgeInsets.symmetric(horizontal: 60),
         child: Column(
           children: [
+            Image.asset('assets/images/logoBrycen.png'),
             Text.rich(
               TextSpan(
                 style: const TextStyle(

@@ -125,6 +125,7 @@ class _TextAndVoiceFieldState extends State<TextAndVoiceField> {
       "text": message,
       "createdAt": Timestamp.now(),
       "isUser": true,
+      'totalTokens': 0,
     });
 
 // prompt
@@ -154,6 +155,7 @@ class _TextAndVoiceFieldState extends State<TextAndVoiceField> {
       "text": chatCompletion.choices[0].message.content,
       "createdAt": Timestamp.now(),
       "isUser": false,
+      'totalTokens': chatCompletion.usage.totalTokens,
     });
     print(chatCompletion.usage.totalTokens);
 
