@@ -49,6 +49,7 @@ dependencies:
   langchain_openai: ^0.0.3
   flutter_markdown: ^0.6.17
   google_fonts: ^5.1.0
+  file_picker: ^5.3.3
 
 dev_dependencies:
   flutter_test:
