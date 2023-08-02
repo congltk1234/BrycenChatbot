@@ -19,30 +19,34 @@ class SummarizeScreen extends StatefulWidget {
 class _SummarizeScreenstate extends State<SummarizeScreen> {
   void _uploadedFile(String path) async {
     TextLoader loader = TextLoader(path);
-    final documents = await loader.load();
-    const textSplitter = CharacterTextSplitter(
-      separator: '\n',
-      chunkSize: 800,
-      chunkOverlap: 0,
-    );
-    final texts = await textSplitter.splitDocuments(documents);
+    const textSplitter = RecursiveCharacterTextSplitter();
+    final docs = await loader.load();
+
+    final docsChunks = textSplitter.splitDocuments(docs);
+
+    final llm = ChatOpenAI(
+        apiKey: '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',
+        model: 'gpt-3.5-turbo-16k-0613');
+    final summarizeChain = SummarizeChain.stuff(llm: llm);
+
+    final summary = await summarizeChain.run(docsChunks);
     // for (var i in texts) {
-    //   await FirebaseFirestore.instance.collection("texts").add({
-    //     "content": i.pageContent,
-    //     // "embed": element.embedding,
-    //     // 'metadata': element.metadata
-    //   });
+    await FirebaseFirestore.instance.collection("stuff").add({
+      "summary": summary,
+      // "embed": element.embedding,
+      // 'metadata': element.metadata
+    });
     // }
-    final textsWithSources = texts
-        .mapIndexed(
-          (final i, final d) => d.copyWith(
-            metadata: {
-              ...d.metadata,
-              'source': '$i-pl',
-            },
-          ),
-        )
-        .toList(growable: false);
+    // final textsWithSources = texts
+    //     .mapIndexed(
+    //       (final i, final d) => d.copyWith(
+    //         metadata: {
+    //           ...d.metadata,
+    //           'source': '$i-pl',
+    //         },
+    //       ),
+    //     )
+    //     .toList(growable: false);
 
     // for (var i in textsWithSources) {
     //   await FirebaseFirestore.instance.collection("textsWithSources").add({
@@ -51,48 +55,49 @@ class _SummarizeScreenstate extends State<SummarizeScreen> {
     //     // 'metadata': element.metadata
     //   });
     // }
-    final embeddings = OpenAIEmbeddings(
-        apiKey: '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');
-    final docSearch = await MemoryVectorStore.fromDocuments(
-      documents: texts,
-      embeddings: embeddings,
-    );
+    // final embeddings = OpenAIEmbeddings(
+    //     apiKey: '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');
+    // final docSearch = await MemoryVectorStore.fromDocuments(
+    //   documents: texts,
+    //   embeddings: embeddings,
+    // );
     // MemoryVectorStore
 // embeddings
-    for (var element in docSearch.memoryVectors) {
-      print(element.embedding);
-      await FirebaseFirestore.instance.collection("embedding").add({
-        "content": element.content,
-        "embed": element.embedding,
-        'metadata': element.metadata
-      });
-    }
+    // for (var element in docSearch.memoryVectors) {
+    //   print(element.embedding);
+    //   await FirebaseFirestore.instance.collection("embedding").add({
+    //     "content": element.content,
+    //     "embed": element.embedding,
+    //     'metadata': element.metadata
+    //   });
+    // }
 
-    final llm = ChatOpenAI(
-      apiKey: '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',
-      model: 'gpt-3.5-turbo-0613',
-      temperature: 0,
-    );
-    final qaChain = OpenAIQAWithSourcesChain(llm: llm);
-    final docPrompt = PromptTemplate.fromTemplate(
-      'Please use the content from the txt file below to answer my question. Please answer in Vietnamese unless the question is asked in English.\ncontent: {page_content}\nSource: {source}',
-    );
-    final finalQAChain = StuffDocumentsChain(
-      llmChain: qaChain,
-      documentPrompt: docPrompt,
-    );
+    // final llm = ChatOpenAI(
+    //   apiKey: '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',
+    //   model: 'gpt-3.5-turbo-0613',
+    //   temperature: 0,
+    // );
 
-    final retrievalQA = RetrievalQAChain(
-      retriever: docSearch.asRetriever(),
-      combineDocumentsChain: finalQAChain,
-    );
+    // final qaChain = OpenAIQAWithSourcesChain(llm: llm);
+    // final docPrompt = PromptTemplate.fromTemplate(
+    //   'Please use the content from the txt file below to answer my question. Please answer in Vietnamese unless the question is asked in English.\ncontent: {page_content}\nSource: {source}',
+    // );
+    // final finalQAChain = StuffDocumentsChain(
+    //   llmChain: qaChain,
+    //   documentPrompt: docPrompt,
+    // );
 
-    /// Question
-    final res = await retrievalQA('Whats the main topic?');
-    FirebaseFirestore.instance.collection("chatSummarize").add({
-      "text": res["result"].toString(),
-      "createdAt": Timestamp.now(),
-    });
+    // final retrievalQA = RetrievalQAChain(
+    //   retriever: docSearch.asRetriever(),
+    //   combineDocumentsChain: finalQAChain,
+    // );
+
+    // /// Question
+    // final res = await retrievalQA('Whats the main topic?');
+    // FirebaseFirestore.instance.collection("chatSummarize").add({
+    //   "text": res["result"].toString(),
+    //   "createdAt": Timestamp.now(),
+    // });
   }
 
   @override
