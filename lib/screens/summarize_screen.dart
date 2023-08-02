@@ -6,6 +6,25 @@ import 'package:langchain/langchain.dart';
 import 'package:langchain_openai/langchain_openai.dart';
 import 'package:collection/collection.dart';
 
+const _template = '''
+Write a concise summary of the following:
+
+"{context}"
+
+then give 3 short related questions. Response with following:
+
+"SUMMARY
+
+<br>
+QUESTION 1
+
+<br>
+QUESTION 2
+
+<br>
+QUESTION 3"
+ ''';
+
 class SummarizeScreen extends StatefulWidget {
   const SummarizeScreen({super.key});
   static const id = 'summarize_screen';
@@ -27,77 +46,36 @@ class _SummarizeScreenstate extends State<SummarizeScreen> {
     final llm = ChatOpenAI(
         apiKey: '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',
         model: 'gpt-3.5-turbo-16k-0613');
-    final summarizeChain = SummarizeChain.stuff(llm: llm);
+
+    final docPrompt = PromptTemplate.fromTemplate(_template);
+    final summarizeChain = SummarizeChain.stuff(
+      llm: llm,
+      promptTemplate: docPrompt,
+    );
 
     final summary = await summarizeChain.run(docsChunks);
-    // for (var i in texts) {
-    await FirebaseFirestore.instance.collection("stuff").add({
-      "summary": summary,
-      // "embed": element.embedding,
-      // 'metadata': element.metadata
+    final re = RegExp(r'((Question)|(question)|(QUESTION)) \d: ');
+    final suggestList = summary.split(re);
+
+    final shortSummary = suggestList.removeAt(0);
+
+    await FirebaseFirestore.instance.collection("stuffSummary").add({
+      "summary with prompt <br>": shortSummary,
+      "createdAt": Timestamp.now(),
     });
-    // }
-    // final textsWithSources = texts
-    //     .mapIndexed(
-    //       (final i, final d) => d.copyWith(
-    //         metadata: {
-    //           ...d.metadata,
-    //           'source': '$i-pl',
-    //         },
-    //       ),
-    //     )
-    //     .toList(growable: false);
 
-    // for (var i in textsWithSources) {
-    //   await FirebaseFirestore.instance.collection("textsWithSources").add({
-    //     "content": i.pageContent,
-    //     // "embed": element.embedding,
-    //     // 'metadata': element.metadata
-    //   });
-    // }
-    // final embeddings = OpenAIEmbeddings(
-    //     apiKey: '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');
-    // final docSearch = await MemoryVectorStore.fromDocuments(
-    //   documents: texts,
-    //   embeddings: embeddings,
-    // );
-    // MemoryVectorStore
-// embeddings
-    // for (var element in docSearch.memoryVectors) {
-    //   print(element.embedding);
-    //   await FirebaseFirestore.instance.collection("embedding").add({
-    //     "content": element.content,
-    //     "embed": element.embedding,
-    //     'metadata': element.metadata
-    //   });
-    // }
+    suggestList.add("What's the main topic?");
 
-    // final llm = ChatOpenAI(
-    //   apiKey: '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',
-    //   model: 'gpt-3.5-turbo-0613',
-    //   temperature: 0,
-    // );
-
-    // final qaChain = OpenAIQAWithSourcesChain(llm: llm);
-    // final docPrompt = PromptTemplate.fromTemplate(
-    //   'Please use the content from the txt file below to answer my question. Please answer in Vietnamese unless the question is asked in English.\ncontent: {page_content}\nSource: {source}',
-    // );
-    // final finalQAChain = StuffDocumentsChain(
-    //   llmChain: qaChain,
-    //   documentPrompt: docPrompt,
-    // );
-
-    // final retrievalQA = RetrievalQAChain(
-    //   retriever: docSearch.asRetriever(),
-    //   combineDocumentsChain: finalQAChain,
-    // );
-
-    // /// Question
-    // final res = await retrievalQA('Whats the main topic?');
-    // FirebaseFirestore.instance.collection("chatSummarize").add({
-    //   "text": res["result"].toString(),
-    //   "createdAt": Timestamp.now(),
-    // });
+    for (var i in suggestList) {
+      await FirebaseFirestore.instance
+          .collection("stuffSummary")
+          .doc('suggestList')
+          .collection("suggestion")
+          .add({
+        "suggest with regex": i,
+        "createdAt": Timestamp.now(),
+      });
+    }
   }
 
   @override
