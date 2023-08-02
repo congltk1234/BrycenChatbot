@@ -42,7 +42,7 @@ class SummarizeScreen extends StatefulWidget {
 
 class _SummarizeScreenstate extends State<SummarizeScreen> {
   bool _hasFiled = true;
-  String _fileUID = 'zNka62lvdwXANYIqB5uk';
+  String _fileUID = 'fYabgYtvbowVSUfsFy9R';
   late SharedPreferences prefs;
   String _initUID = 'id';
   String _initAPIKey = '';
@@ -101,7 +101,37 @@ class _SummarizeScreenstate extends State<SummarizeScreen> {
     final docs = await loader.load();
 
     final docsChunks = textSplitter.splitDocuments(docs);
-
+    /////
+    //// Embedding and stored Embedded Vectors
+    final textsWithSources = docsChunks
+        .mapIndexed(
+          (final i, final d) => d.copyWith(
+            metadata: {
+              ...d.metadata,
+              'source': '$i-pl',
+            },
+          ),
+        )
+        .toList(growable: false);
+    final embeddings = OpenAIEmbeddings(apiKey: openAIKey);
+    final docSearch = await MemoryVectorStore.fromDocuments(
+      documents: textsWithSources,
+      embeddings: embeddings,
+    );
+    for (var element in docSearch.memoryVectors) {
+      await FirebaseFirestore.instance
+          .collection("users")
+          .doc(_initUID)
+          .collection('summarize')
+          .doc(fileID.docs.first.reference.id)
+          .collection("embeddedVectors")
+          .add({
+        "content": element.content,
+        "embed": element.embedding,
+        'metadata': element.metadata
+      });
+    }
+//////////////////////////////
     final llm = ChatOpenAI(apiKey: openAIKey, model: 'gpt-3.5-turbo-16k-0613');
 
     final docPrompt = PromptTemplate.fromTemplate(_template);
@@ -138,7 +168,7 @@ class _SummarizeScreenstate extends State<SummarizeScreen> {
           .doc(fileID.docs.first.reference.id)
           .collection("suggestion")
           .add({
-        "suggest with regex": i,
+        "suggestQuestion": i,
         "createdAt": Timestamp.now(),
       });
     }
