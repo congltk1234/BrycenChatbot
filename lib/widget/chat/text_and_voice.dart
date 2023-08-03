@@ -1,13 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:dart_openai/dart_openai.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-
 import 'package:brycen_chatbot/services/voice_handle.dart';
 import 'package:brycen_chatbot/widget/chat/toggle_button.dart';
+import 'package:langchain/langchain.dart';
+import 'package:langchain_openai/langchain_openai.dart' as langOpenAI;
 
 enum InputMode {
   text,
   voice,
+}
+
+enum TaskMode {
+  chat,
+  summarize,
 }
 
 class TextAndVoiceField extends StatefulWidget {
@@ -15,20 +21,23 @@ class TextAndVoiceField extends StatefulWidget {
   final String _initAPIKey;
   final String _initUsername;
   final String _memory;
+  final String _taskMode;
   // final List<dynamic> _memory;
+  final String fileID = 'fYabgYtvbowVSUfsFy9R';
 
-  const TextAndVoiceField(
-      {super.key,
-      required String uid,
-      required String apiKey,
-      required String userName,
-      required String memory
-      // required List<dynamic> memory,
-      })
-      : _initUID = uid,
+  const TextAndVoiceField({
+    super.key,
+    required String uid,
+    required String apiKey,
+    required String userName,
+    required String memory,
+    required String taskMode,
+    // required List<dynamic> memory,
+  })  : _initUID = uid,
         _initAPIKey = apiKey,
         _initUsername = userName,
-        _memory = memory;
+        _memory = memory,
+        _taskMode = taskMode;
   @override
   State<TextAndVoiceField> createState() => _TextAndVoiceFieldState();
 }
@@ -78,7 +87,13 @@ class _TextAndVoiceFieldState extends State<TextAndVoiceField> {
           sendTextMessage: () {
             final message = _messageController.text;
             _messageController.clear();
-            sendTextMessage(message);
+            if (widget._taskMode == 'chat') {
+              sendTextMessage(message);
+            }
+            if (widget._taskMode == 'summarize') {
+              documentQA(message);
+            }
+
             setState(() {
               _messageController.clear();
               setInputMode(InputMode.voice);
@@ -146,7 +161,6 @@ class _TextAndVoiceFieldState extends State<TextAndVoiceField> {
       "AI": chatCompletion.choices[0].message.content,
       'totalTokens': chatCompletion.usage.totalTokens,
     });
-
 //// Update memory
     await FirebaseFirestore.instance
         .collection("users")
@@ -155,6 +169,68 @@ class _TextAndVoiceFieldState extends State<TextAndVoiceField> {
       "memory":
           "${widget._memory}\nHuman:$message\nAI:${chatCompletion.choices[0].message.content}"
     });
+    setReplyingState(false);
+  }
+
+  void documentQA(String message) async {
+    setReplyingState(true);
+
+    final embeddings = langOpenAI.OpenAIEmbeddings(apiKey: widget._initAPIKey);
+    final llm = langOpenAI.ChatOpenAI(
+        apiKey: widget._initAPIKey, model: 'gpt-3.5-turbo-16k-0613');
+
+    final storedVectors = await FirebaseFirestore.instance
+        .collection("users")
+        .doc(widget._initUID)
+        .collection('summarize')
+        .doc(widget.fileID)
+        .collection("embeddedVectors")
+        .get();
+
+    List<List<double>> vectorList = [];
+    List<Document> docList = [];
+
+    for (var element in storedVectors.docs) {
+      List<double> embedded =
+          List<double>.from(element.data()['embed'] as List);
+      vectorList.add(embedded);
+      docList.add(Document(
+          pageContent: element.data()['content'],
+          metadata: element.data()['metadata']));
+    }
+
+    final listVector = MemoryVectorStore(embeddings: embeddings);
+    listVector.addVectors(vectors: vectorList, documents: docList);
+    listVector.similaritySearch(query: 'User prompt');
+
+    final qaChain = langOpenAI.OpenAIQAWithSourcesChain(llm: llm);
+    final docprompt = PromptTemplate.fromTemplate(
+      'Content: {page_content}\nSource: {source}',
+    );
+    final finalQAChain = StuffDocumentsChain(
+      llmChain: qaChain,
+      documentPrompt: docprompt,
+    );
+    final retrievalQA = RetrievalQAChain(
+      retriever: listVector.asRetriever(),
+      combineDocumentsChain: finalQAChain,
+    );
+
+    final res = await retrievalQA(message);
+
+    await FirebaseFirestore.instance
+        .collection("users")
+        .doc(widget._initUID)
+        .collection('summarize')
+        .doc(widget.fileID)
+        .collection("QuestionAnswering")
+        .add({
+      "createdAt": Timestamp.now(),
+      "Human": message,
+      "AI": res["result"].toString(),
+      'totalTokens': 0,
+    });
+
     setReplyingState(false);
   }
 

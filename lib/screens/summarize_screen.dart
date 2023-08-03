@@ -118,6 +118,7 @@ class _SummarizeScreenstate extends State<SummarizeScreen> {
       documents: textsWithSources,
       embeddings: embeddings,
     );
+
     for (var element in docSearch.memoryVectors) {
       await FirebaseFirestore.instance
           .collection("users")
@@ -131,9 +132,10 @@ class _SummarizeScreenstate extends State<SummarizeScreen> {
         'metadata': element.metadata
       });
     }
+    // listVector.
 //////////////////////////////
     final llm = ChatOpenAI(apiKey: openAIKey, model: 'gpt-3.5-turbo-16k-0613');
-
+//// summarize
     final docPrompt = PromptTemplate.fromTemplate(_template);
     final summarizeChain = SummarizeChain.stuff(
       llm: llm,
@@ -278,25 +280,15 @@ class _SummarizeScreenstate extends State<SummarizeScreen> {
                 case ConnectionState.active:
                   if (!chatSnapshots.hasData ||
                       chatSnapshots.data!.docs.isEmpty) {
-                    return Scaffold(
-                      appBar: const ConfigAppBar(title: 'Chat Screen'),
+                    return const Scaffold(
+                      appBar: ConfigAppBar(title: 'Chat Screen'),
                       body: Column(
                         children: [
-                          const Expanded(
+                          Expanded(
                             child: Center(
                               child: Text('No messages found.'),
                             ),
                           ),
-                          Padding(
-                            padding: const EdgeInsets.all(12.0),
-                            child: TextAndVoiceField(
-                              uid: _initUID,
-                              userName: _initUsername,
-                              apiKey: _initAPIKey,
-                              memory: _memoryBuffer,
-                            ),
-                          ),
-                          const SizedBox(height: 8),
                         ],
                       ),
                     );
@@ -356,6 +348,7 @@ class _SummarizeScreenstate extends State<SummarizeScreen> {
                             userName: _initUsername,
                             apiKey: _initAPIKey,
                             memory: _memoryBuffer,
+                            taskMode: 'summarize',
                           ),
                         ),
                         const SizedBox(height: 8),
@@ -365,7 +358,7 @@ class _SummarizeScreenstate extends State<SummarizeScreen> {
                 case ConnectionState.done:
                   break;
               }
-              return Center(child: Text('error'));
+              return const Center(child: Text('error'));
             });
   }
 }
