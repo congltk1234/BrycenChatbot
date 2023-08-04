@@ -41,8 +41,8 @@ class SummarizeScreen extends StatefulWidget {
 }
 
 class _SummarizeScreenstate extends State<SummarizeScreen> {
-  bool _hasFiled = true;
-  String _fileUID = 'fYabgYtvbowVSUfsFy9R';
+  bool _hasFiled = false;
+  String _fileUID = 'k3ADiCK8eI4WntdWjvdO';
   late SharedPreferences prefs;
   String _initUID = 'id';
   String _initAPIKey = '';
@@ -90,13 +90,13 @@ class _SummarizeScreenstate extends State<SummarizeScreen> {
   void _uploadedFile(String uid, String openAIKey, String path) async {
     TextLoader loader = TextLoader(path);
 
-    final fileID = await FirebaseFirestore.instance
-        .collection("users")
-        .doc(_initUID)
-        .collection('summarize')
-        .where('FilePath', isEqualTo: path)
-        .get();
-
+    // final fileID = await FirebaseFirestore.instance
+    //     .collection("users")
+    //     .doc(_initUID)
+    //     .collection('summarize')
+    //     .where('FilePath', isEqualTo: path)
+    //     .get();
+    // final fileID = 'k3ADiCK8eI4WntdWjvdO';
     const textSplitter = RecursiveCharacterTextSplitter();
     final docs = await loader.load();
 
@@ -113,18 +113,19 @@ class _SummarizeScreenstate extends State<SummarizeScreen> {
           ),
         )
         .toList(growable: false);
+
     final embeddings = OpenAIEmbeddings(apiKey: openAIKey);
     final docSearch = await MemoryVectorStore.fromDocuments(
       documents: textsWithSources,
       embeddings: embeddings,
     );
-
+    print('Finish Embeddings');
     for (var element in docSearch.memoryVectors) {
       await FirebaseFirestore.instance
           .collection("users")
           .doc(_initUID)
           .collection('summarize')
-          .doc(fileID.docs.first.reference.id)
+          .doc('k3ADiCK8eI4WntdWjvdO')
           .collection("embeddedVectors")
           .add({
         "content": element.content,
@@ -132,6 +133,9 @@ class _SummarizeScreenstate extends State<SummarizeScreen> {
         'metadata': element.metadata
       });
     }
+
+    print('Uploaded Embeddings to FireStore');
+
     // listVector.
 //////////////////////////////
     final llm = ChatOpenAI(apiKey: openAIKey, model: 'gpt-3.5-turbo-16k-0613');
@@ -147,12 +151,14 @@ class _SummarizeScreenstate extends State<SummarizeScreen> {
     final suggestList = summary.split(re);
 
     final shortSummary = suggestList.removeAt(0);
+    print('Finish Summarize');
 
     await FirebaseFirestore.instance
         .collection("users")
         .doc(_initUID)
         .collection('summarize')
-        .doc(fileID.docs.first.reference.id)
+        .doc('k3ADiCK8eI4WntdWjvdO')
+        // .doc(fileID.docs.first.reference.id)
         .collection('QuestionAnswering')
         .add({
       "AI": shortSummary,
@@ -167,17 +173,18 @@ class _SummarizeScreenstate extends State<SummarizeScreen> {
           .collection("users")
           .doc(_initUID)
           .collection('summarize')
-          .doc(fileID.docs.first.reference.id)
+          .doc('k3ADiCK8eI4WntdWjvdO')
           .collection("suggestion")
           .add({
         "suggestQuestion": i,
         "createdAt": Timestamp.now(),
       });
     }
+    print('Uploaded Summarize');
 
     setState(() {
       _hasFiled = true;
-      _fileUID = fileID.docs.first.reference.id;
+      _fileUID = 'k3ADiCK8eI4WntdWjvdO';
     });
   }
 
@@ -216,16 +223,16 @@ class _SummarizeScreenstate extends State<SummarizeScreen> {
                           if (result == null) return;
                           PlatformFile file = result.files.first;
 
-                          FirebaseFirestore.instance
-                              .collection("users")
-                              .doc(_initUID)
-                              .collection('summarize')
-                              .add(
-                            {
-                              "FilePath": file.path,
-                              "createdAt": Timestamp.now(),
-                            },
-                          );
+                          // FirebaseFirestore.instance
+                          //     .collection("users")
+                          //     .doc(_initUID)
+                          //     .collection('summarize')
+                          //     .add(
+                          //   {
+                          //     "FilePath": file.path,
+                          //     "createdAt": Timestamp.now(),
+                          //   },
+                          // );
 
                           final path = file.path;
                           _uploadedFile(

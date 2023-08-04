@@ -329,6 +329,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
     return Scaffold(
       appBar: const ConfigAppBar(title: 'Home Screen'),
+      // drawer: MainDrawer(),
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,

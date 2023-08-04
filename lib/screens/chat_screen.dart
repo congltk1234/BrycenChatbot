@@ -188,7 +188,7 @@ class _ChatScreenState extends State<ChatScreen> {
             case ConnectionState.done:
               break;
           }
-          return Center(child: Text('error'));
+          return const Center(child: Text('error'));
         });
   }
 }
