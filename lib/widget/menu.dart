@@ -2,10 +2,12 @@ import 'dart:convert';
 
 import 'package:brycen_chatbot/firebase_options.dart';
 import 'package:brycen_chatbot/models/user.dart';
+import 'package:brycen_chatbot/providers/menu_provider.dart';
 // import 'package:brycen_chatbot/widget/chatTitle.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 void main() async {
@@ -13,7 +15,7 @@ void main() async {
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
-  runApp(MyApp());
+  runApp(const ProviderScope(child: MyApp()));
 }
 
 class MyApp extends StatelessWidget {
@@ -34,25 +36,27 @@ class MyApp extends StatelessWidget {
   }
 }
 
-class MyHomePage extends StatefulWidget {
+class MyHomePage extends ConsumerStatefulWidget {
   const MyHomePage({super.key, required this.title});
 
   final String title;
 
   @override
-  State<MyHomePage> createState() => _MyHomePageState();
+  ConsumerState<MyHomePage> createState() => _MyHomePageState();
 }
 
-class _MyHomePageState extends State<MyHomePage> {
+class _MyHomePageState extends ConsumerState<MyHomePage> {
   int _selectedIndex = 0;
   GlobalKey<ScaffoldState> scaffoldKey = GlobalKey<ScaffoldState>();
-  late List<UserModel> _widgetOptions;
+  // late List<UserModel> _widgetOptions;
   late UserModel currentUser;
 
   @override
   void initState() {
-    menuList();
+    // menuList();
     _fetchValue();
+    ref.read(summaryProvider.notifier).fetchDatafromFireStore();
+
     super.initState();
   }
 
@@ -75,6 +79,8 @@ class _MyHomePageState extends State<MyHomePage> {
   Widget build(BuildContext context) {
     // _fetchValue();
 
+    final List<UserModel> _widgetOptions = ref.watch(summaryProvider);
+    final provideUser = ref.watch(usersProvider);
     return Scaffold(
       key: scaffoldKey,
       // appBar: AppBar(title: Text(widget.title)),
@@ -83,11 +89,12 @@ class _MyHomePageState extends State<MyHomePage> {
           child: Column(
             children: [
               Text('Drawler demo'),
-              Text('Current User: \n ${currentUser.username}'),
+              Text('Current User: \n ${provideUser.username}'),
               TextButton(
                   child: Text('Chat'),
                   onPressed: () {
                     scaffoldKey.currentState!.openDrawer();
+                    ref.read(summaryProvider.notifier).addData(provideUser);
                   }),
               TextButton(
                   child: Text('Summarize'),
@@ -103,7 +110,7 @@ class _MyHomePageState extends State<MyHomePage> {
         child: SafeArea(
           child: ListView(
             padding: EdgeInsets.zero,
-            children: _buildTiles(),
+            children: _buildTiles(_widgetOptions),
           ),
         ),
       ),
@@ -111,36 +118,22 @@ class _MyHomePageState extends State<MyHomePage> {
         child: SafeArea(
           child: ListView(
             padding: EdgeInsets.zero,
-            children: _buildTiles(),
+            children: _buildTiles(_widgetOptions),
           ),
         ),
       ),
     );
   }
 
-  void menuList() async {
-    final users = await FirebaseFirestore.instance.collection("users").get();
-    List<UserModel> widgetList = [];
-    for (var element in users.docs) {
-      // final option = Text(element.data()['Username']);
-      widgetList.add(UserModel(
-          uid: element.id,
-          username: element.data()['Username'],
-          // chatDate: element.data()['createdAt'],
-          apiKey: element.data()['APIkey']));
-    }
-    setState(() {
-      _widgetOptions = widgetList;
-    });
-  }
-
-  List<Widget> _buildTiles() {
+  List<Widget> _buildTiles(List<UserModel> _widgetOptions) {
     List<Widget> tiles = [
       ListTile(
         horizontalTitleGap: 0.0,
         leading: const Icon(Icons.add),
         title: Text('New Chat'),
-        onTap: () {},
+        onTap: () {
+          ref.read(summaryProvider.notifier).addData(currentUser);
+        },
       ),
     ];
 
@@ -171,13 +164,13 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 }
 
-class MenuItemPage extends StatelessWidget {
+class MenuItemPage extends ConsumerWidget {
   final UserModel user;
 
   const MenuItemPage({super.key, required this.user});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return Scaffold(
       appBar: AppBar(
         title: Text("${user.username}"),
@@ -202,10 +195,10 @@ class MenuItemPage extends StatelessWidget {
               child: Text('Stored user to sharedprefrence'),
               onPressed: () async {
                 SharedPreferences pref = await SharedPreferences.getInstance();
-                // Map json = jsonDecode(jsonString);
                 String a = jsonEncode(user);
                 pref.setString('userData', a);
                 print('Stored');
+                ref.read(summaryProvider.notifier).addData(user);
               },
             ),
           ],
