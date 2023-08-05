@@ -106,6 +106,8 @@ class _MyHomePageState extends ConsumerState<MyHomePage> {
           ),
         ),
       ),
+      // https://blog.logrocket.com/how-to-add-navigation-drawer-flutter/
+      // https://docs.flutter.dev/cookbook/design/drawer
       drawer: Drawer(
         child: SafeArea(
           child: ListView(
@@ -194,6 +196,7 @@ class MenuItemPage extends ConsumerWidget {
             ElevatedButton(
               child: Text('Stored user to sharedprefrence'),
               onPressed: () async {
+//https://stackoverflow.com/questions/53931513/store-data-as-an-object-in-shared-preferences-in-flutter
                 SharedPreferences pref = await SharedPreferences.getInstance();
                 String a = jsonEncode(user);
                 pref.setString('userData', a);

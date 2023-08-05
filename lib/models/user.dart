@@ -1,3 +1,4 @@
+// https://javiercbk.github.io/json_to_dart/
 class UserModel {
   String? uid;
   String? username;

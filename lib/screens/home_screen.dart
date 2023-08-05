@@ -167,7 +167,7 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     var userForm = Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 40),
+      padding: const EdgeInsets.symmetric(horizontal: 30),
       child: Form(
         key: _formKey,
         child: Column(
@@ -190,6 +190,10 @@ class _HomeScreenState extends State<HomeScreen> {
                 hintText: 'Your Name:',
                 prefixIcon: Icon(Icons.account_circle,
                     color: Theme.of(context).colorScheme.secondary),
+                suffixIcon: IconButton(
+                  icon: Icon(Icons.clear),
+                  onPressed: _enteredUsername.clear,
+                ),
               ),
               validator: (value) {
                 if (value == null || value.trim().isEmpty) {
@@ -210,17 +214,32 @@ class _HomeScreenState extends State<HomeScreen> {
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(20),
                 ),
-                suffixIcon: IconButton(
-                  icon: Icon(passwordVisible
-                      ? Icons.visibility
-                      : Icons.visibility_off),
-                  onPressed: () {
-                    setState(
-                      () {
-                        passwordVisible = !passwordVisible;
+                suffixIcon: Row(
+                  mainAxisAlignment: MainAxisAlignment.end, // added line
+                  mainAxisSize: MainAxisSize.min, // added line
+                  children: [
+                    IconButton(
+                      padding: EdgeInsets.all(0),
+                      icon: const Icon(Icons.clear),
+                      onPressed: _enteredAPIKey.clear,
+                    ),
+                    IconButton(
+                      padding: EdgeInsets.all(0),
+                      icon: Icon(
+                        passwordVisible
+                            ? Icons.visibility
+                            : Icons.visibility_off,
+                        size: 20,
+                      ),
+                      onPressed: () {
+                        setState(
+                          () {
+                            passwordVisible = !passwordVisible;
+                          },
+                        );
                       },
-                    );
-                  },
+                    ),
+                  ],
                 ),
               ),
               onChanged: (value) async {
