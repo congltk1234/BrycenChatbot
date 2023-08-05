@@ -1,8 +1,12 @@
+import 'dart:convert';
+
 import 'package:brycen_chatbot/firebase_options.dart';
-import 'package:brycen_chatbot/widget/chatTitle.dart';
+import 'package:brycen_chatbot/models/user.dart';
+// import 'package:brycen_chatbot/widget/chatTitle.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -20,7 +24,10 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      theme: ThemeData(useMaterial3: true),
+      theme: ThemeData(
+        useMaterial3: true,
+        colorScheme: ColorScheme.fromSeed(seedColor: Colors.greenAccent),
+      ),
       title: appTitle,
       home: MyHomePage(title: appTitle),
     );
@@ -39,7 +46,24 @@ class MyHomePage extends StatefulWidget {
 class _MyHomePageState extends State<MyHomePage> {
   int _selectedIndex = 0;
   GlobalKey<ScaffoldState> scaffoldKey = GlobalKey<ScaffoldState>();
-  late List<ChatTitle> _widgetOptions;
+  late List<UserModel> _widgetOptions;
+  late UserModel currentUser;
+
+  @override
+  void initState() {
+    menuList();
+    _fetchValue();
+    super.initState();
+  }
+
+  void _fetchValue() async {
+    SharedPreferences pref = await SharedPreferences.getInstance();
+    Map<String, dynamic> json = jsonDecode(pref.getString('userData')!);
+    setState(() {
+      currentUser = UserModel.fromJson(json);
+    });
+    print('get User ${currentUser.username}');
+  }
 
   void _onItemTapped(int index) {
     setState(() {
@@ -49,7 +73,7 @@ class _MyHomePageState extends State<MyHomePage> {
 
   @override
   Widget build(BuildContext context) {
-    menuList();
+    _fetchValue();
 
     return Scaffold(
       key: scaffoldKey,
@@ -59,6 +83,7 @@ class _MyHomePageState extends State<MyHomePage> {
           child: Column(
             children: [
               Text('Drawler demo'),
+              Text('Current User: \n ${currentUser.username}'),
               TextButton(
                   child: Text('Chat'),
                   onPressed: () {
@@ -95,18 +120,15 @@ class _MyHomePageState extends State<MyHomePage> {
 
   void menuList() async {
     final users = await FirebaseFirestore.instance.collection("users").get();
-
-    List<ChatTitle> widgetList = [];
-
+    List<UserModel> widgetList = [];
     for (var element in users.docs) {
       // final option = Text(element.data()['Username']);
-      widgetList.add(ChatTitle(
-          id: element.id,
-          title: element.data()['Username'],
+      widgetList.add(UserModel(
+          uid: element.id,
+          username: element.data()['Username'],
           // chatDate: element.data()['createdAt'],
           apiKey: element.data()['APIkey']));
     }
-
     setState(() {
       _widgetOptions = widgetList;
     });
@@ -124,13 +146,13 @@ class _MyHomePageState extends State<MyHomePage> {
 
     for (var element in _widgetOptions) {
       tiles.add(ListTile(
-        title: Text(element.title),
+        title: Text(element.username!),
         onTap: () {
           Navigator.push(
             context,
             MaterialPageRoute(
               builder: (context) => MenuItemPage(
-                chatTitle: element,
+                user: element,
               ),
             ),
           );
@@ -144,22 +166,38 @@ class _MyHomePageState extends State<MyHomePage> {
 }
 
 class MenuItemPage extends StatelessWidget {
-  final ChatTitle chatTitle;
+  final UserModel user;
 
-  const MenuItemPage({super.key, required this.chatTitle});
+  const MenuItemPage({super.key, required this.user});
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text("${chatTitle.title}"),
+        title: Text("${user.username}"),
       ),
       body: Center(
-          child: Text(
-        'Your API is ${chatTitle.apiKey}',
-        textAlign: TextAlign.center,
-        overflow: TextOverflow.ellipsis,
-        style: TextStyle(fontWeight: FontWeight.bold),
+          child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Text(
+            'Your API is \n ${user.apiKey}',
+            textAlign: TextAlign.center,
+            overflow: TextOverflow.ellipsis,
+            style: TextStyle(fontWeight: FontWeight.bold),
+          ),
+          const Divider(height: 10),
+          ElevatedButton(
+            child: Text('Stored user to sharedprefrence'),
+            onPressed: () async {
+              SharedPreferences pref = await SharedPreferences.getInstance();
+// Map json = jsonDecode(jsonString);
+              String a = jsonEncode(user);
+              pref.setString('userData', a);
+              print('Stored');
+            },
+          ),
+        ],
       )),
     );
   }
