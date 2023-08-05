@@ -73,7 +73,7 @@ class _MyHomePageState extends State<MyHomePage> {
 
   @override
   Widget build(BuildContext context) {
-    _fetchValue();
+    // _fetchValue();
 
     return Scaffold(
       key: scaffoldKey,
@@ -145,20 +145,26 @@ class _MyHomePageState extends State<MyHomePage> {
     ];
 
     for (var element in _widgetOptions) {
-      tiles.add(ListTile(
-        title: Text(element.username!),
-        onTap: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => MenuItemPage(
-                user: element,
+      tiles.add(
+        ListTile(
+          title: Text(element.username!),
+          onTap: () async {
+            Navigator.pop(context);
+            final result = await Navigator.of(context).push<UserModel>(
+              MaterialPageRoute(
+                builder: (context) => MenuItemPage(
+                  user: element,
+                ),
               ),
-            ),
-          );
-          // Navigator.pop(context);
-        },
-      ));
+            );
+
+            print('selected ${result!.username}');
+            setState(() {
+              currentUser = result;
+            });
+          },
+        ),
+      );
     }
 
     return tiles;
@@ -176,29 +182,35 @@ class MenuItemPage extends StatelessWidget {
       appBar: AppBar(
         title: Text("${user.username}"),
       ),
-      body: Center(
-          child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Text(
-            'Your API is \n ${user.apiKey}',
-            textAlign: TextAlign.center,
-            overflow: TextOverflow.ellipsis,
-            style: TextStyle(fontWeight: FontWeight.bold),
-          ),
-          const Divider(height: 10),
-          ElevatedButton(
-            child: Text('Stored user to sharedprefrence'),
-            onPressed: () async {
-              SharedPreferences pref = await SharedPreferences.getInstance();
-// Map json = jsonDecode(jsonString);
-              String a = jsonEncode(user);
-              pref.setString('userData', a);
-              print('Stored');
-            },
-          ),
-        ],
-      )),
+      body: WillPopScope(
+        onWillPop: () async {
+          Navigator.of(context).pop(user);
+          return false;
+        },
+        child: Center(
+            child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text(
+              'Your API is \n ${user.apiKey}',
+              textAlign: TextAlign.center,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(fontWeight: FontWeight.bold),
+            ),
+            const Divider(height: 10),
+            ElevatedButton(
+              child: Text('Stored user to sharedprefrence'),
+              onPressed: () async {
+                SharedPreferences pref = await SharedPreferences.getInstance();
+                // Map json = jsonDecode(jsonString);
+                String a = jsonEncode(user);
+                pref.setString('userData', a);
+                print('Stored');
+              },
+            ),
+          ],
+        )),
+      ),
     );
   }
 }
