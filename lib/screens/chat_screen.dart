@@ -1,17 +1,25 @@
-import 'package:brycen_chatbot/values/share_keys.dart';
 import 'package:brycen_chatbot/widget/app_bar.dart';
 import 'package:brycen_chatbot/widget/chat/chat_item.dart';
 import 'package:brycen_chatbot/widget/chat/text_and_voice.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:intl/intl.dart';
 
 class ChatScreen extends StatefulWidget {
-  const ChatScreen({super.key, required this.chatTitleID});
-  static const id = 'chat_screen';
-  final String chatTitleID;
-
+  ChatScreen({
+    super.key,
+    required this.chatTitleID,
+    required this.chatTitle,
+    required this.uid,
+    required this.apiKey,
+    required this.userName,
+  });
+  // static const id = 'chat_screen';
+  String chatTitleID;
+  String chatTitle;
+  String uid;
+  String apiKey;
+  String userName;
   @override
   State<StatefulWidget> createState() {
     return _ChatScreenState();
@@ -19,11 +27,6 @@ class ChatScreen extends StatefulWidget {
 }
 
 class _ChatScreenState extends State<ChatScreen> {
-  late SharedPreferences prefs;
-  String _initUID = 'id';
-  String _initAPIKey = '';
-  String _initUsername = '';
-
   int k_memory = 3;
   var _memoryBuffer = '';
   late List<dynamic> memory;
@@ -36,7 +39,6 @@ class _ChatScreenState extends State<ChatScreen> {
   void initState() {
     _listScrollController = ScrollController();
     focusNode = FocusNode();
-    _getLocalValue();
     super.initState();
   }
 
@@ -54,21 +56,12 @@ class _ChatScreenState extends State<ChatScreen> {
         curve: Curves.easeInOut);
   }
 
-  void _getLocalValue() async {
-    prefs = await SharedPreferences.getInstance();
-    setState(() {
-      _initAPIKey = prefs.getString(ShareKeys.APIkey) ?? '';
-      _initUsername = prefs.getString(ShareKeys.Username) ?? '';
-      _initUID = prefs.getString(ShareKeys.UID) ?? '';
-    });
-  }
-
   @override
   Widget build(BuildContext context) {
     return StreamBuilder(
         stream: FirebaseFirestore.instance
             .collection("users")
-            .doc(_initUID)
+            .doc(widget.uid)
             .collection('chat')
             .doc(widget.chatTitleID)
             .collection('chat_history')
@@ -104,7 +97,7 @@ class _ChatScreenState extends State<ChatScreen> {
             case ConnectionState.active:
               if (!chatSnapshots.hasData || chatSnapshots.data!.docs.isEmpty) {
                 return Scaffold(
-                  appBar: const ConfigAppBar(title: 'Chat Screen'),
+                  appBar: ConfigAppBar(title: widget.chatTitle),
                   body: Column(
                     children: [
                       const Expanded(
@@ -115,11 +108,12 @@ class _ChatScreenState extends State<ChatScreen> {
                       Padding(
                         padding: const EdgeInsets.all(12.0),
                         child: TextAndVoiceField(
-                          uid: _initUID,
-                          userName: _initUsername,
-                          apiKey: _initAPIKey,
+                          uid: widget.uid,
+                          userName: widget.userName,
+                          apiKey: widget.apiKey,
                           memory: _memoryBuffer,
                           taskMode: 'chat',
+                          chatID: widget.chatTitleID,
                         ),
                       ),
                       const SizedBox(height: 8),
@@ -142,15 +136,16 @@ class _ChatScreenState extends State<ChatScreen> {
                 _memoryBuffer =
                     "$_memoryBuffer\nHuman:${msg.data()['Human']}\nAI:${msg.data()['AI']}";
               }
-              // print(_memoryBuffer);
+              print(_memoryBuffer);
 
               if (_needsScroll) {
                 WidgetsBinding.instance
                     .addPostFrameCallback((_) => scrollListToEND());
                 // _needsScroll = false;
               }
+              print(widget.chatTitleID);
               return Scaffold(
-                appBar: const ConfigAppBar(title: 'Chat Screen'),
+                appBar: ConfigAppBar(title: widget.chatTitle),
                 body: Column(
                   children: [
                     Expanded(
@@ -177,11 +172,12 @@ class _ChatScreenState extends State<ChatScreen> {
                     Padding(
                       padding: const EdgeInsets.all(12.0),
                       child: TextAndVoiceField(
-                        uid: _initUID,
-                        userName: _initUsername,
-                        apiKey: _initAPIKey,
+                        uid: widget.uid,
+                        userName: widget.userName,
+                        apiKey: widget.apiKey,
                         memory: _memoryBuffer,
                         taskMode: 'chat',
+                        chatID: widget.chatTitleID,
                       ),
                     ),
                     const SizedBox(height: 8),

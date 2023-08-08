@@ -40,7 +40,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   var _isExpired = false;
   bool? _isAPI;
   String? errorText;
-
+  String? newID;
   @override
   void initState() {
     _getLocalValue();
@@ -354,66 +354,102 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       );
     }
 
-    List<Widget> _buildTiles(List<ChatTitleModel> chatTitleOptions) {
-      List<Widget> titles = [
-        ListTile(
-          horizontalTitleGap: 0.0,
-          leading: const Icon(Icons.add),
-          title: Text('New Chat'),
-          onTap: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                  builder: (context) => ChatScreen(
-                        // chatTitleID: element.chatid!,
-                        chatTitleID: 'abc',
-                      )),
-            );
-          },
-        ),
-        Divider(height: 1),
-      ];
-
-      for (var element in chatTitleOptions) {
-        titles.add(
-          ListTile(
-            title: Text(element.chattitle!),
-            onTap: () async {
-              // Navigator.pop(context);
-              // final result = await Navigator.of(context).push<ChatTitleModel>(
-              //   MaterialPageRoute(
-              //     builder: (context) => MenuItemPage(
-              //       title: element,
-              //     ),
-              //   ),
-              // );
-              // print('selected ${result!.chattitle}');
-              // setState(() {
-              //   // currentTitle = result;
-              // });
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                    builder: (context) => ChatScreen(
-                          // chatTitleID: element.chatid!,
-                          chatTitleID: element.chatid!,
-                        )),
-              );
-            },
-          ),
-        );
-      }
-      return titles;
-    }
-
     return Scaffold(
       key: scaffoldKey,
-      appBar: const ConfigAppBar(title: 'Home Screen'),
+      // appBar: const ConfigAppBar(title: 'Home Screen'),
       drawer: Drawer(
         child: SafeArea(
-          child: ListView(
-            padding: EdgeInsets.zero,
-            children: _buildTiles(_widgetOptions),
+          child: Column(
+            children: [
+              ListTile(
+                leading: const Icon(Icons.add),
+                title: Text('New Chat'),
+                onTap: () async {
+                  await FirebaseFirestore.instance
+                      .collection("users")
+                      .doc(_initUID)
+                      .collection("chat")
+                      .add(
+                    {
+                      "createdAt": Timestamp.now(),
+                      "chatTitle": 'New chat',
+                      "memory": "",
+                      'modifiredAt': Timestamp.now(),
+                    },
+                  ).then((value) {
+                    setState(() {
+                      newID = value.id;
+                    });
+                  });
+
+                  ref.read(chatTitleProvider.notifier).newChat(
+                        ChatTitleModel(
+                          chatid: newID,
+                          chattitle: 'New Chat',
+                          memory: '',
+                        ),
+                      );
+                  // ignore: use_build_context_synchronously
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => ChatScreen(
+                        // chatTitleID: element.chatid!,
+                        uid: _initUID,
+                        userName: _initUsername,
+                        apiKey: _initAPIKey,
+                        chatTitleID: newID!,
+                        chatTitle: 'New Chat',
+                      ),
+                    ),
+                  );
+                  ref
+                      .read(chatTitleProvider.notifier)
+                      .fetchDatafromFireStore(_initUID);
+                },
+              ),
+              Divider(height: 1),
+              Expanded(
+                child: ListView.builder(
+                  itemCount: _widgetOptions.length,
+                  itemBuilder: (BuildContext context, int index) {
+                    // final chatTitles = _widgetOptions.reversed.toList();
+                    return ListTile(
+                      leading: const Icon(Icons.chat_outlined),
+                      title: Text(_widgetOptions[index].chattitle!),
+                      onTap: () async {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => ChatScreen(
+                              uid: _initUID,
+                              userName: _initUsername,
+                              apiKey: _initAPIKey,
+                              chatTitleID: _widgetOptions[index].chatid!,
+                              chatTitle: _widgetOptions[index].chattitle!,
+                            ),
+                          ),
+                        );
+                        ref
+                            .read(chatTitleProvider.notifier)
+                            .fetchDatafromFireStore(_initUID);
+                      },
+                    );
+                  },
+                ),
+              ),
+              Divider(height: 1),
+              ListTile(
+                leading: const Icon(Icons.home),
+                title: Text('Home'),
+                onTap: () {},
+              ),
+              ListTile(
+                leading: Icon(Icons.settings),
+                title: Text('Setting'),
+                onTap: () {},
+              )
+            ],
           ),
         ),
       ),

@@ -24,20 +24,23 @@ class TextAndVoiceField extends StatefulWidget {
   final String _taskMode;
   // final List<dynamic> _memory;
   final String fileID = 'k3ADiCK8eI4WntdWjvdO';
-
-  const TextAndVoiceField({
+  String _chatID;
+  TextAndVoiceField({
     super.key,
     required String uid,
     required String apiKey,
     required String userName,
     required String memory,
     required String taskMode,
+    required String chatID,
     // required List<dynamic> memory,
   })  : _initUID = uid,
         _initAPIKey = apiKey,
         _initUsername = userName,
         _memory = memory,
-        _taskMode = taskMode;
+        _taskMode = taskMode,
+        _chatID = chatID;
+
   @override
   State<TextAndVoiceField> createState() => _TextAndVoiceFieldState();
 }
@@ -87,6 +90,8 @@ class _TextAndVoiceFieldState extends State<TextAndVoiceField> {
           sendTextMessage: () {
             final message = _messageController.text;
             _messageController.clear();
+
+            /// Switch Case
             if (widget._taskMode == 'chat') {
               sendTextMessage(message);
             }
@@ -132,11 +137,13 @@ class _TextAndVoiceFieldState extends State<TextAndVoiceField> {
     }
   }
 
+  // void check
+
   void sendTextMessage(String message) async {
     setReplyingState(true);
 // prompt
     final prompt =
-        "Here's a conversation between user ${widget._initUsername} with AI: ${widget._memory} .\n From given context, response this message: $message";
+        "Here's a conversation between user ${widget._initUsername} and AI: \n From given context \n ${widget._memory} \n response this message: $message";
 
     /// Bot Response Chat GPT here
     OpenAI.apiKey = widget._initAPIKey;
@@ -150,21 +157,55 @@ class _TextAndVoiceFieldState extends State<TextAndVoiceField> {
         ),
       ],
     );
+    final listHistory = await FirebaseFirestore.instance
+        .collection('users')
+        .doc(widget._initUID)
+        .collection("chat")
+        .doc(widget._chatID)
+        .collection('chat_history')
+        .get();
+    if (listHistory.docs.length < 2) {
+      final OpenAIChatCompletionModel topic = await OpenAI.instance.chat.create(
+        model: "gpt-3.5-turbo",
+        messages: [
+          OpenAIChatCompletionChoiceMessageModel(
+            content:
+                "Short Key Topic of given context (No more than 10 words):  \nHuman:$message\nAI:${chatCompletion.choices[0].message.content}",
+            role: OpenAIChatMessageRole.user,
+          ),
+        ],
+      );
+      print(topic.choices[0].message.content);
 
+      await FirebaseFirestore.instance
+          .collection("users")
+          .doc(widget._initUID)
+          .collection('chat')
+          .doc(widget._chatID)
+          .update({
+        "chatTitle": topic.choices[0].message.content,
+        "memory":
+            "${widget._memory}\nHuman:$message\nAI:${chatCompletion.choices[0].message.content}"
+      });
+    }
     await FirebaseFirestore.instance
         .collection('users')
         .doc(widget._initUID)
         .collection("chat")
+        .doc(widget._chatID)
+        .collection('chat_history')
         .add({
       "createdAt": Timestamp.now(),
       "Human": message,
       "AI": chatCompletion.choices[0].message.content,
       'totalTokens': chatCompletion.usage.totalTokens,
     });
-//// Update memory
+    //// Update memory
     await FirebaseFirestore.instance
         .collection("users")
         .doc(widget._initUID)
+        .collection('chat')
+        .doc(widget._chatID)
         .update({
       "memory":
           "${widget._memory}\nHuman:$message\nAI:${chatCompletion.choices[0].message.content}"

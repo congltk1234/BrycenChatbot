@@ -350,13 +350,13 @@ class _SummarizeScreenstate extends State<SummarizeScreen> {
                         ),
                         Padding(
                           padding: const EdgeInsets.all(12.0),
-                          child: TextAndVoiceField(
-                            uid: _initUID,
-                            userName: _initUsername,
-                            apiKey: _initAPIKey,
-                            memory: _memoryBuffer,
-                            taskMode: 'summarize',
-                          ),
+                          // child: TextAndVoiceField(
+                          //   uid: _initUID,
+                          //   userName: _initUsername,
+                          //   apiKey: _initAPIKey,
+                          //   memory: _memoryBuffer,
+                          //   taskMode: 'summarize',
+                          // ),
                         ),
                         const SizedBox(height: 8),
                       ],

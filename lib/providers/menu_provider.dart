@@ -39,6 +39,7 @@ final summaryProvider = StateNotifierProvider<SummaryNotifier, List<UserModel>>(
 
 class ChatTitleNotifier extends StateNotifier<List<ChatTitleModel>> {
   ChatTitleNotifier() : super([]);
+
   void fetchDatafromFireStore(
     String uid,
   ) async {
