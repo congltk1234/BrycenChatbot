@@ -1,3 +1,4 @@
+import 'package:brycen_chatbot/models/chatTitle.dart';
 import 'package:brycen_chatbot/models/user.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -33,5 +34,41 @@ class SummaryNotifier extends StateNotifier<List<UserModel>> {
 final summaryProvider = StateNotifierProvider<SummaryNotifier, List<UserModel>>(
   ((ref) {
     return SummaryNotifier();
+  }),
+);
+
+class ChatTitleNotifier extends StateNotifier<List<ChatTitleModel>> {
+  ChatTitleNotifier() : super([]);
+  void fetchDatafromFireStore(
+    String uid,
+  ) async {
+    final chatTitles = await FirebaseFirestore.instance
+        .collection("users")
+        .doc(uid)
+        .collection('chat')
+        .orderBy('modifiredAt', descending: true)
+        .get();
+    List<ChatTitleModel> chatTitlesList = [];
+    for (var element in chatTitles.docs) {
+      // final option = Text(element.data()['Username']);
+      chatTitlesList.add(ChatTitleModel(
+          chatid: element.id,
+          chattitle: element.data()['chatTitle'],
+          // chatDate: element.data()['createdAt'],
+          memory: element.data()['memory']));
+    }
+    state = chatTitlesList;
+  }
+
+  void newChat(ChatTitleModel chatTitle) {
+    // final mealIsFavorite = state.contains(user);
+    state = [...state, chatTitle];
+  }
+}
+
+final chatTitleProvider =
+    StateNotifierProvider<ChatTitleNotifier, List<ChatTitleModel>>(
+  ((ref) {
+    return ChatTitleNotifier();
   }),
 );

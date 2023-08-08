@@ -1,29 +1,34 @@
+import 'package:brycen_chatbot/models/chatTitle.dart';
+import 'package:brycen_chatbot/providers/menu_provider.dart';
 import 'package:brycen_chatbot/screens/chat_screen.dart';
 import 'package:brycen_chatbot/screens/summarize_screen.dart';
 import 'package:brycen_chatbot/values/share_keys.dart';
 import 'package:brycen_chatbot/widget/app_bar.dart';
+import 'package:brycen_chatbot/widget/menu.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 
-class HomeScreen extends StatefulWidget {
+class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
   static const id = 'home_screen';
 
   @override
-  State<StatefulWidget> createState() {
+  ConsumerState<ConsumerStatefulWidget> createState() {
     return _HomeScreenState();
   }
 }
 
-class _HomeScreenState extends State<HomeScreen> {
+class _HomeScreenState extends ConsumerState<HomeScreen> {
   // controllers for form text controllers
+  late ChatTitleModel currentTitle;
   final _formKey = GlobalKey<FormState>();
   final TextEditingController _enteredAPIKey = TextEditingController();
   final TextEditingController _enteredUsername = TextEditingController();
-
+  GlobalKey<ScaffoldState> scaffoldKey = GlobalKey<ScaffoldState>();
   late SharedPreferences prefs;
   var _initUID = '';
   var _initAPIKey = '';
@@ -146,7 +151,7 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
-  void _getLocalValue() async {
+  Future<void> _getLocalValue() async {
     prefs = await SharedPreferences.getInstance();
     setState(() {
       _initAPIKey = prefs.getString(ShareKeys.APIkey) ?? '';
@@ -157,6 +162,8 @@ class _HomeScreenState extends State<HomeScreen> {
         _enteredAPIKey.text = _initAPIKey;
         _enteredUsername.text = _initUsername;
       }
+
+      ref.read(chatTitleProvider.notifier).fetchDatafromFireStore(_initUID);
     });
     final key_status = await checkApiKey(_initAPIKey);
     setState(() {
@@ -166,6 +173,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final List<ChatTitleModel> _widgetOptions = ref.watch(chatTitleProvider);
     var userForm = Padding(
       padding: const EdgeInsets.symmetric(horizontal: 30),
       child: Form(
@@ -346,9 +354,69 @@ class _HomeScreenState extends State<HomeScreen> {
       );
     }
 
+    List<Widget> _buildTiles(List<ChatTitleModel> chatTitleOptions) {
+      List<Widget> titles = [
+        ListTile(
+          horizontalTitleGap: 0.0,
+          leading: const Icon(Icons.add),
+          title: Text('New Chat'),
+          onTap: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                  builder: (context) => ChatScreen(
+                        // chatTitleID: element.chatid!,
+                        chatTitleID: 'abc',
+                      )),
+            );
+          },
+        ),
+        Divider(height: 1),
+      ];
+
+      for (var element in chatTitleOptions) {
+        titles.add(
+          ListTile(
+            title: Text(element.chattitle!),
+            onTap: () async {
+              // Navigator.pop(context);
+              // final result = await Navigator.of(context).push<ChatTitleModel>(
+              //   MaterialPageRoute(
+              //     builder: (context) => MenuItemPage(
+              //       title: element,
+              //     ),
+              //   ),
+              // );
+              // print('selected ${result!.chattitle}');
+              // setState(() {
+              //   // currentTitle = result;
+              // });
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                    builder: (context) => ChatScreen(
+                          // chatTitleID: element.chatid!,
+                          chatTitleID: element.chatid!,
+                        )),
+              );
+            },
+          ),
+        );
+      }
+      return titles;
+    }
+
     return Scaffold(
+      key: scaffoldKey,
       appBar: const ConfigAppBar(title: 'Home Screen'),
-      // drawer: MainDrawer(),
+      drawer: Drawer(
+        child: SafeArea(
+          child: ListView(
+            padding: EdgeInsets.zero,
+            children: _buildTiles(_widgetOptions),
+          ),
+        ),
+      ),
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -360,7 +428,8 @@ class _HomeScreenState extends State<HomeScreen> {
                 children: [
                   ElevatedButton(
                     onPressed: () {
-                      Navigator.pushNamed(context, ChatScreen.id);
+                      scaffoldKey.currentState!.openDrawer();
+                      // Navigator.pushNamed(context, ChatScreen.id);
                     },
                     child: const Text('Chatbot'),
                   ),

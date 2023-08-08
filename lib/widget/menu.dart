@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:brycen_chatbot/firebase_options.dart';
+import 'package:brycen_chatbot/models/chatTitle.dart';
 import 'package:brycen_chatbot/models/user.dart';
 import 'package:brycen_chatbot/providers/menu_provider.dart';
 // import 'package:brycen_chatbot/widget/chatTitle.dart';
@@ -49,24 +50,26 @@ class _MyHomePageState extends ConsumerState<MyHomePage> {
   int _selectedIndex = 0;
   GlobalKey<ScaffoldState> scaffoldKey = GlobalKey<ScaffoldState>();
   // late List<UserModel> _widgetOptions;
-  late UserModel currentUser;
+  late ChatTitleModel currentTitle;
 
   @override
   void initState() {
     // menuList();
     _fetchValue();
-    ref.read(summaryProvider.notifier).fetchDatafromFireStore();
+    ref
+        .read(chatTitleProvider.notifier)
+        .fetchDatafromFireStore('VC0AAVpP10HLI3ghTO5D');
 
     super.initState();
   }
 
   void _fetchValue() async {
     SharedPreferences pref = await SharedPreferences.getInstance();
-    Map<String, dynamic> json = jsonDecode(pref.getString('userData')!);
+    Map<String, dynamic> json = jsonDecode(pref.getString('chatTitle')!);
     setState(() {
-      currentUser = UserModel.fromJson(json);
+      currentTitle = ChatTitleModel.fromJson(json);
     });
-    print('get User ${currentUser.username}');
+    print('get Title ${currentTitle.chattitle}');
   }
 
   void _onItemTapped(int index) {
@@ -79,11 +82,12 @@ class _MyHomePageState extends ConsumerState<MyHomePage> {
   Widget build(BuildContext context) {
     // _fetchValue();
 
-    final List<UserModel> _widgetOptions = ref.watch(summaryProvider);
+    // final List<UserModel> _widgetOptions = ref.watch(summaryProvider);
+
+    final List<ChatTitleModel> _widgetOptions = ref.watch(chatTitleProvider);
     final provideUser = ref.watch(usersProvider);
     return Scaffold(
       key: scaffoldKey,
-      // appBar: AppBar(title: Text(widget.title)),
       body: SafeArea(
         child: Center(
           child: Column(
@@ -94,7 +98,7 @@ class _MyHomePageState extends ConsumerState<MyHomePage> {
                   child: Text('Chat'),
                   onPressed: () {
                     scaffoldKey.currentState!.openDrawer();
-                    ref.read(summaryProvider.notifier).addData(provideUser);
+                    // ref.read(summaryProvider.notifier).addData(provideUser);
                   }),
               TextButton(
                   child: Text('Summarize'),
@@ -127,35 +131,34 @@ class _MyHomePageState extends ConsumerState<MyHomePage> {
     );
   }
 
-  List<Widget> _buildTiles(List<UserModel> _widgetOptions) {
+  List<Widget> _buildTiles(List<ChatTitleModel> widgetOptions) {
     List<Widget> tiles = [
       ListTile(
         horizontalTitleGap: 0.0,
         leading: const Icon(Icons.add),
         title: Text('New Chat'),
         onTap: () {
-          ref.read(summaryProvider.notifier).addData(currentUser);
+          ref.read(chatTitleProvider.notifier).newChat(currentTitle);
         },
       ),
     ];
 
-    for (var element in _widgetOptions) {
+    for (var element in widgetOptions) {
       tiles.add(
         ListTile(
-          title: Text(element.username!),
+          title: Text(element.chattitle!),
           onTap: () async {
             Navigator.pop(context);
-            final result = await Navigator.of(context).push<UserModel>(
+            final result = await Navigator.of(context).push<ChatTitleModel>(
               MaterialPageRoute(
                 builder: (context) => MenuItemPage(
-                  user: element,
+                  title: element,
                 ),
               ),
             );
-
-            print('selected ${result!.username}');
+            print('selected ${result!.chattitle}');
             setState(() {
-              currentUser = result;
+              currentTitle = result;
             });
           },
         ),
@@ -167,19 +170,19 @@ class _MyHomePageState extends ConsumerState<MyHomePage> {
 }
 
 class MenuItemPage extends ConsumerWidget {
-  final UserModel user;
+  final ChatTitleModel title;
 
-  const MenuItemPage({super.key, required this.user});
+  const MenuItemPage({super.key, required this.title});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return Scaffold(
       appBar: AppBar(
-        title: Text("${user.username}"),
+        title: Text("${title.chattitle}"),
       ),
       body: WillPopScope(
         onWillPop: () async {
-          Navigator.of(context).pop(user);
+          Navigator.of(context).pop(title);
           return false;
         },
         child: Center(
@@ -187,7 +190,7 @@ class MenuItemPage extends ConsumerWidget {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Text(
-              'Your API is \n ${user.apiKey}',
+              'Your API is \n ${title.chatid}',
               textAlign: TextAlign.center,
               overflow: TextOverflow.ellipsis,
               style: TextStyle(fontWeight: FontWeight.bold),
@@ -198,10 +201,10 @@ class MenuItemPage extends ConsumerWidget {
               onPressed: () async {
 //https://stackoverflow.com/questions/53931513/store-data-as-an-object-in-shared-preferences-in-flutter
                 SharedPreferences pref = await SharedPreferences.getInstance();
-                String a = jsonEncode(user);
-                pref.setString('userData', a);
+                String a = jsonEncode(title);
+                pref.setString('chatTitle', a);
                 print('Stored');
-                ref.read(summaryProvider.notifier).addData(user);
+                ref.read(chatTitleProvider.notifier).newChat(title);
               },
             ),
           ],

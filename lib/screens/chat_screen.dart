@@ -8,8 +8,9 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:intl/intl.dart';
 
 class ChatScreen extends StatefulWidget {
-  const ChatScreen({super.key});
+  const ChatScreen({super.key, required this.chatTitleID});
   static const id = 'chat_screen';
+  final String chatTitleID;
 
   @override
   State<StatefulWidget> createState() {
@@ -69,6 +70,8 @@ class _ChatScreenState extends State<ChatScreen> {
             .collection("users")
             .doc(_initUID)
             .collection('chat')
+            .doc(widget.chatTitleID)
+            .collection('chat_history')
             .orderBy(
               "createdAt",
               descending: true,
@@ -139,7 +142,7 @@ class _ChatScreenState extends State<ChatScreen> {
                 _memoryBuffer =
                     "$_memoryBuffer\nHuman:${msg.data()['Human']}\nAI:${msg.data()['AI']}";
               }
-              print(_memoryBuffer);
+              // print(_memoryBuffer);
 
               if (_needsScroll) {
                 WidgetsBinding.instance

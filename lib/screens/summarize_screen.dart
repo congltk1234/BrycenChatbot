@@ -41,7 +41,7 @@ class SummarizeScreen extends StatefulWidget {
 }
 
 class _SummarizeScreenstate extends State<SummarizeScreen> {
-  bool _hasFiled = false;
+  bool _hasFiled = true;
   String _fileUID = 'k3ADiCK8eI4WntdWjvdO';
   late SharedPreferences prefs;
   String _initUID = 'id';
