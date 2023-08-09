@@ -2,7 +2,6 @@ import 'dart:convert';
 
 import 'package:brycen_chatbot/firebase_options.dart';
 import 'package:brycen_chatbot/models/chatTitle.dart';
-import 'package:brycen_chatbot/models/user.dart';
 import 'package:brycen_chatbot/providers/menu_provider.dart';
 // import 'package:brycen_chatbot/widget/chatTitle.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -85,15 +84,12 @@ class _MyHomePageState extends ConsumerState<MyHomePage> {
     // final List<UserModel> _widgetOptions = ref.watch(summaryProvider);
 
     final List<ChatTitleModel> _widgetOptions = ref.watch(chatTitleProvider);
-    final provideUser = ref.watch(usersProvider);
     return Scaffold(
       key: scaffoldKey,
       body: SafeArea(
         child: Center(
           child: Column(
             children: [
-              Text('Drawler demo'),
-              Text('Current User: \n ${provideUser.username}'),
               TextButton(
                   child: Text('Chat'),
                   onPressed: () {

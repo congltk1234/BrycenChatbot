@@ -54,10 +54,11 @@ class ChatItem extends StatelessWidget {
                   // mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     const SizedBox(width: 45),
-                    Text(
-                      'Used Tokens: ${tokens.toString()}',
-                      style: const TextStyle(fontStyle: FontStyle.italic),
-                    ),
+                    if (tokens > 0)
+                      Text(
+                        'Used Tokens: ${tokens.toString()}',
+                        style: const TextStyle(fontStyle: FontStyle.italic),
+                      ),
                   ],
                 ),
                 Container(

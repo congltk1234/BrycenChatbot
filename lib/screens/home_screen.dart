@@ -164,6 +164,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       }
 
       ref.read(chatTitleProvider.notifier).fetchDatafromFireStore(_initUID);
+      ref.read(summaryProvider.notifier).fetchDatafromFireStore(_initUID);
     });
     final key_status = await checkApiKey(_initAPIKey);
     setState(() {
@@ -173,7 +174,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final List<ChatTitleModel> _widgetOptions = ref.watch(chatTitleProvider);
+    final List<ChatTitleModel> chatTitle = ref.watch(chatTitleProvider);
+    final List<ChatTitleModel> summarizeTitle = ref.watch(summaryProvider);
     var userForm = Padding(
       padding: const EdgeInsets.symmetric(horizontal: 30),
       child: Form(
@@ -357,102 +359,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     return Scaffold(
       key: scaffoldKey,
       // appBar: const ConfigAppBar(title: 'Home Screen'),
-      drawer: Drawer(
-        child: SafeArea(
-          child: Column(
-            children: [
-              ListTile(
-                leading: const Icon(Icons.add),
-                title: Text('New Chat'),
-                onTap: () async {
-                  await FirebaseFirestore.instance
-                      .collection("users")
-                      .doc(_initUID)
-                      .collection("chat")
-                      .add(
-                    {
-                      "createdAt": Timestamp.now(),
-                      "chatTitle": 'New chat',
-                      "memory": "",
-                      'modifiredAt': Timestamp.now(),
-                    },
-                  ).then((value) {
-                    setState(() {
-                      newID = value.id;
-                    });
-                  });
-
-                  ref.read(chatTitleProvider.notifier).newChat(
-                        ChatTitleModel(
-                          chatid: newID,
-                          chattitle: 'New Chat',
-                          memory: '',
-                        ),
-                      );
-                  // ignore: use_build_context_synchronously
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => ChatScreen(
-                        // chatTitleID: element.chatid!,
-                        uid: _initUID,
-                        userName: _initUsername,
-                        apiKey: _initAPIKey,
-                        chatTitleID: newID!,
-                        chatTitle: 'New Chat',
-                      ),
-                    ),
-                  );
-                  ref
-                      .read(chatTitleProvider.notifier)
-                      .fetchDatafromFireStore(_initUID);
-                },
-              ),
-              Divider(height: 1),
-              Expanded(
-                child: ListView.builder(
-                  itemCount: _widgetOptions.length,
-                  itemBuilder: (BuildContext context, int index) {
-                    // final chatTitles = _widgetOptions.reversed.toList();
-                    return ListTile(
-                      leading: const Icon(Icons.chat_outlined),
-                      title: Text(_widgetOptions[index].chattitle!),
-                      onTap: () async {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => ChatScreen(
-                              uid: _initUID,
-                              userName: _initUsername,
-                              apiKey: _initAPIKey,
-                              chatTitleID: _widgetOptions[index].chatid!,
-                              chatTitle: _widgetOptions[index].chattitle!,
-                            ),
-                          ),
-                        );
-                        ref
-                            .read(chatTitleProvider.notifier)
-                            .fetchDatafromFireStore(_initUID);
-                      },
-                    );
-                  },
-                ),
-              ),
-              Divider(height: 1),
-              ListTile(
-                leading: const Icon(Icons.home),
-                title: Text('Home'),
-                onTap: () {},
-              ),
-              ListTile(
-                leading: Icon(Icons.settings),
-                title: Text('Setting'),
-                onTap: () {},
-              )
-            ],
-          ),
-        ),
-      ),
+      drawer: DrawerMenu(context, chatTitle, true),
+      endDrawer: DrawerMenu(context, summarizeTitle, false),
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -471,12 +379,151 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   ),
                   ElevatedButton(
                     onPressed: () {
-                      Navigator.pushNamed(context, SummarizeScreen.id);
+                      // Navigator.pushNamed(context, SummarizeScreen.id);
+                      scaffoldKey.currentState!.openEndDrawer();
                     },
                     child: const Text('Summary'),
                   ),
                 ],
               ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Drawer DrawerMenu(
+      BuildContext context, List<ChatTitleModel> widgetOptions, bool mode) {
+    return Drawer(
+      child: SafeArea(
+        child: Column(
+          children: [
+            ListTile(
+              leading: const Icon(Icons.add),
+              title: const Text('New Chat'),
+              onTap: () async {
+                await FirebaseFirestore.instance
+                    .collection("users")
+                    .doc(_initUID)
+                    .collection(mode ? "chat" : "summarize")
+                    .add(
+                  {
+                    "createdAt": Timestamp.now(),
+                    "chatTitle": 'New chat',
+                    "memory": "",
+                    'modifiedAt': Timestamp.now(),
+                  },
+                ).then((value) {
+                  setState(() {
+                    newID = value.id;
+                  });
+                });
+
+                mode
+                    ? ref.read(chatTitleProvider.notifier).newChat(
+                          ChatTitleModel(
+                            chatid: newID,
+                            chattitle: 'New Chat',
+                            memory: '',
+                          ),
+                        )
+                    : ref.read(summaryProvider.notifier).newChat(
+                          ChatTitleModel(
+                            chatid: newID,
+                            chattitle: 'New Chat',
+                            memory: '',
+                          ),
+                        );
+                // ignore: use_build_context_synchronously
+                mode
+                    ? Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => ChatScreen(
+                            uid: _initUID,
+                            userName: _initUsername,
+                            apiKey: _initAPIKey,
+                            chatTitleID: newID!,
+                            chatTitle: 'New Chat',
+                          ),
+                        ),
+                      )
+                    : Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => SummarizeScreen(
+                            uid: _initUID,
+                            userName: _initUsername,
+                            apiKey: _initAPIKey,
+                            chatTitleID: newID!,
+                            chatTitle: 'New Chat',
+                            hasFile: false,
+                          ),
+                        ),
+                      );
+                mode
+                    ? ref
+                        .read(chatTitleProvider.notifier)
+                        .fetchDatafromFireStore(_initUID)
+                    : ref
+                        .read(summaryProvider.notifier)
+                        .fetchDatafromFireStore(_initUID);
+              },
+            ),
+            const Divider(height: 1),
+            Expanded(
+              child: ListView.builder(
+                itemCount: widgetOptions.length,
+                itemBuilder: (BuildContext context, int index) {
+                  // final chatTitles = chatTitle.reversed.toList();
+                  return ListTile(
+                    leading: const Icon(Icons.chat_outlined),
+                    title: Text(widgetOptions[index].chattitle!),
+                    onTap: () async {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => mode
+                              ? ChatScreen(
+                                  uid: _initUID,
+                                  userName: _initUsername,
+                                  apiKey: _initAPIKey,
+                                  chatTitleID: widgetOptions[index].chatid!,
+                                  chatTitle: widgetOptions[index].chattitle!,
+                                )
+                              : SummarizeScreen(
+                                  uid: _initUID,
+                                  userName: _initUsername,
+                                  apiKey: _initAPIKey,
+                                  chatTitleID: widgetOptions[index].chatid!,
+                                  chatTitle: widgetOptions[index].chattitle!,
+                                  hasFile: true,
+                                ),
+                        ),
+                      );
+                      mode
+                          ? ref
+                              .read(chatTitleProvider.notifier)
+                              .fetchDatafromFireStore(_initUID)
+                          : ref
+                              .read(summaryProvider.notifier)
+                              .fetchDatafromFireStore(_initUID);
+                    },
+                  );
+                },
+              ),
+            ),
+            Divider(height: 1),
+            ListTile(
+              leading: const Icon(Icons.home),
+              title: Text('Home'),
+              onTap: () {},
+            ),
+            ListTile(
+              leading: Icon(Icons.settings),
+              title: Text('Setting'),
+              onTap: () {},
+            )
           ],
         ),
       ),

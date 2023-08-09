@@ -11,11 +11,6 @@ enum InputMode {
   voice,
 }
 
-enum TaskMode {
-  chat,
-  summarize,
-}
-
 class TextAndVoiceField extends StatefulWidget {
   final String _initUID;
   final String _initAPIKey;
@@ -23,7 +18,6 @@ class TextAndVoiceField extends StatefulWidget {
   final String _memory;
   final String _taskMode;
   // final List<dynamic> _memory;
-  final String fileID = 'k3ADiCK8eI4WntdWjvdO';
   String _chatID;
   TextAndVoiceField({
     super.key,
@@ -144,6 +138,7 @@ class _TextAndVoiceFieldState extends State<TextAndVoiceField> {
 // prompt
     final prompt =
         "Here's a conversation between user ${widget._initUsername} and AI: \n From given context \n ${widget._memory} \n response this message: $message";
+    print('send msg');
 
     /// Bot Response Chat GPT here
     OpenAI.apiKey = widget._initAPIKey;
@@ -196,8 +191,8 @@ class _TextAndVoiceFieldState extends State<TextAndVoiceField> {
         .collection('chat_history')
         .add({
       "createdAt": Timestamp.now(),
-      "Human": message,
-      "AI": chatCompletion.choices[0].message.content,
+      "Human": message.trim(),
+      "AI": chatCompletion.choices[0].message.content.trim(),
       'totalTokens': chatCompletion.usage.totalTokens,
     });
     //// Update memory
@@ -224,7 +219,7 @@ class _TextAndVoiceFieldState extends State<TextAndVoiceField> {
         .collection("users")
         .doc(widget._initUID)
         .collection('summarize')
-        .doc(widget.fileID)
+        .doc(widget._chatID)
         .collection("embeddedVectors")
         .get();
 
@@ -239,7 +234,7 @@ class _TextAndVoiceFieldState extends State<TextAndVoiceField> {
           pageContent: element.data()['content'],
           metadata: element.data()['metadata']));
     }
-
+    print('load vector');
     final listVector = MemoryVectorStore(embeddings: embeddings);
     listVector.addVectors(vectors: vectorList, documents: docList);
     listVector.similaritySearch(query: 'User prompt');
@@ -258,12 +253,12 @@ class _TextAndVoiceFieldState extends State<TextAndVoiceField> {
     );
 
     final res = await retrievalQA(message);
-
+    print('query');
     await FirebaseFirestore.instance
         .collection("users")
         .doc(widget._initUID)
         .collection('summarize')
-        .doc(widget.fileID)
+        .doc(widget._chatID)
         .collection("QuestionAnswering")
         .add({
       "createdAt": Timestamp.now(),

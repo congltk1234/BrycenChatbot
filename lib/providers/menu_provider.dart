@@ -1,37 +1,36 @@
 import 'package:brycen_chatbot/models/chatTitle.dart';
-import 'package:brycen_chatbot/models/user.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-final usersProvider = Provider(
-  ((ref) {
-    return UserModel(uid: 'abc', username: 'dummy usser', apiKey: 'afjdjs');
-  }),
-);
-
-class SummaryNotifier extends StateNotifier<List<UserModel>> {
+class SummaryNotifier extends StateNotifier<List<ChatTitleModel>> {
   SummaryNotifier() : super([]);
-  void fetchDatafromFireStore() async {
-    final users = await FirebaseFirestore.instance.collection("users").get();
-    List<UserModel> usersList = [];
-    for (var element in users.docs) {
-      // final option = Text(element.data()['Username']);
-      usersList.add(UserModel(
-          uid: element.id,
-          username: element.data()['Username'],
+  void fetchDatafromFireStore(
+    String uid,
+  ) async {
+    final chatTitles = await FirebaseFirestore.instance
+        .collection("users")
+        .doc(uid)
+        .collection('summarize')
+        .orderBy('modifiedAt', descending: true)
+        .get();
+    List<ChatTitleModel> chatTitlesList = [];
+    for (var element in chatTitles.docs) {
+      chatTitlesList.add(ChatTitleModel(
+          chatid: element.id,
+          chattitle: element.data()['chatTitle'],
           // chatDate: element.data()['createdAt'],
-          apiKey: element.data()['APIkey']));
+          memory: element.data()['memory']));
     }
-    state = usersList;
+    state = chatTitlesList;
   }
 
-  void addData(UserModel user) {
-    // final mealIsFavorite = state.contains(user);
-    state = [...state, user];
+  void newChat(ChatTitleModel chatTitle) {
+    state = [...state, chatTitle];
   }
 }
 
-final summaryProvider = StateNotifierProvider<SummaryNotifier, List<UserModel>>(
+final summaryProvider =
+    StateNotifierProvider<SummaryNotifier, List<ChatTitleModel>>(
   ((ref) {
     return SummaryNotifier();
   }),
@@ -47,7 +46,7 @@ class ChatTitleNotifier extends StateNotifier<List<ChatTitleModel>> {
         .collection("users")
         .doc(uid)
         .collection('chat')
-        .orderBy('modifiredAt', descending: true)
+        .orderBy('modifiedAt', descending: true)
         .get();
     List<ChatTitleModel> chatTitlesList = [];
     for (var element in chatTitles.docs) {
