@@ -165,7 +165,7 @@ class _TextAndVoiceFieldState extends State<TextAndVoiceField> {
         messages: [
           OpenAIChatCompletionChoiceMessageModel(
             content:
-                "Short Key Topic of given context (No more than 10 words):  \nHuman:$message\nAI:${chatCompletion.choices[0].message.content}",
+                "Give Short Topic of given coversation (No more than 10 words using language coversation):  \nHuman:$message\nAI:${chatCompletion.choices[0].message.content}",
             role: OpenAIChatMessageRole.user,
           ),
         ],

@@ -476,39 +476,93 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 itemCount: widgetOptions.length,
                 itemBuilder: (BuildContext context, int index) {
                   // final chatTitles = chatTitle.reversed.toList();
-                  return ListTile(
-                    leading: const Icon(Icons.chat_outlined),
-                    title: Text(widgetOptions[index].chattitle!),
-                    onTap: () async {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => mode
-                              ? ChatScreen(
-                                  uid: _initUID,
-                                  userName: _initUsername,
-                                  apiKey: _initAPIKey,
-                                  chatTitleID: widgetOptions[index].chatid!,
-                                  chatTitle: widgetOptions[index].chattitle!,
-                                )
-                              : SummarizeScreen(
-                                  uid: _initUID,
-                                  userName: _initUsername,
-                                  apiKey: _initAPIKey,
-                                  chatTitleID: widgetOptions[index].chatid!,
-                                  chatTitle: widgetOptions[index].chattitle!,
-                                  hasFile: true,
-                                ),
-                        ),
-                      );
-                      mode
-                          ? ref
-                              .read(chatTitleProvider.notifier)
-                              .fetchDatafromFireStore(_initUID)
-                          : ref
-                              .read(summaryProvider.notifier)
-                              .fetchDatafromFireStore(_initUID);
+                  return Dismissible(
+                    key: UniqueKey(),
+                    background: Container(
+                      color: Colors.red,
+                    ),
+                    onDismissed: (DismissDirection direction) async {
+                      final instance = FirebaseFirestore.instance;
+                      final batch = instance.batch();
+                      var document = instance
+                          .collection("users")
+                          .doc(_initUID)
+                          .collection(mode ? "chat" : "summarize")
+                          .doc(widgetOptions[index].chatid!);
+                      if (mode) {
+                        var snapshots =
+                            await document.collection('chat_history').get();
+                        for (var doc in snapshots.docs) {
+                          batch.delete(doc.reference);
+                        }
+                      } else {
+                        var snapshots = await document
+                            .collection('QuestionAnswering')
+                            .get();
+                        for (var doc in snapshots.docs) {
+                          batch.delete(doc.reference);
+                        }
+                        snapshots =
+                            await document.collection('embeddedVectors').get();
+                        for (var doc in snapshots.docs) {
+                          batch.delete(doc.reference);
+                        }
+                        snapshots =
+                            await document.collection('suggestion').get();
+                        for (var doc in snapshots.docs) {
+                          batch.delete(doc.reference);
+                        }
+                      }
+                      await batch.commit();
+
+                      await FirebaseFirestore.instance
+                          .collection("users")
+                          .doc(_initUID)
+                          .collection(mode ? "chat" : "summarize")
+                          .doc(widgetOptions[index].chatid!)
+                          .delete()
+                          .then((value) => print("ChatTitle Deleted"))
+                          .catchError(
+                              (error) => print("Failed to delete: $error"));
+
+                      setState(() {
+                        widgetOptions.removeAt(index);
+                      });
                     },
+                    child: ListTile(
+                      leading: const Icon(Icons.chat_outlined),
+                      title: Text(widgetOptions[index].chattitle!),
+                      onTap: () async {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => mode
+                                ? ChatScreen(
+                                    uid: _initUID,
+                                    userName: _initUsername,
+                                    apiKey: _initAPIKey,
+                                    chatTitleID: widgetOptions[index].chatid!,
+                                    chatTitle: widgetOptions[index].chattitle!,
+                                  )
+                                : SummarizeScreen(
+                                    uid: _initUID,
+                                    userName: _initUsername,
+                                    apiKey: _initAPIKey,
+                                    chatTitleID: widgetOptions[index].chatid!,
+                                    chatTitle: widgetOptions[index].chattitle!,
+                                    hasFile: true,
+                                  ),
+                          ),
+                        );
+                        mode
+                            ? ref
+                                .read(chatTitleProvider.notifier)
+                                .fetchDatafromFireStore(_initUID)
+                            : ref
+                                .read(summaryProvider.notifier)
+                                .fetchDatafromFireStore(_initUID);
+                      },
+                    ),
                   );
                 },
               ),

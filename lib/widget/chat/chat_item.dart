@@ -94,7 +94,7 @@ class ChatItem extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.all(12),
                 constraints: BoxConstraints(
-                    maxWidth: MediaQuery.of(context).size.width * 0.7),
+                    maxWidth: MediaQuery.of(context).size.width * 0.65),
                 decoration: BoxDecoration(
                     color: Colors.grey[350],
                     borderRadius: const BorderRadius.only(
@@ -130,9 +130,13 @@ class ChatItem extends StatelessWidget {
                       onPressed: _speak,
                       icon: Icon(
                           _isSpeaking ? Icons.volume_mute : Icons.volume_up),
+                      iconSize: 20,
                     ),
                     GestureDetector(
-                      child: const Icon(Icons.copy),
+                      child: const Icon(
+                        Icons.copy,
+                        size: 20,
+                      ),
                       onTap: () {
                         Clipboard.setData(ClipboardData(text: botResponse));
                         ScaffoldMessenger.of(context)
@@ -150,11 +154,15 @@ class ChatItem extends StatelessWidget {
                   children: [
                     IconButton(
                       onPressed: _speak,
+                      iconSize: 20,
                       icon: Icon(
                           _isSpeaking ? Icons.volume_mute : Icons.volume_up),
                     ),
                     GestureDetector(
-                      child: const Icon(Icons.copy),
+                      child: const Icon(
+                        Icons.copy,
+                        size: 20,
+                      ),
                       onTap: () {
                         Clipboard.setData(ClipboardData(text: botResponse));
                         ScaffoldMessenger.of(context)

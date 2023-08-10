@@ -136,7 +136,7 @@ class _ChatScreenState extends State<ChatScreen> {
                 _memoryBuffer =
                     "$_memoryBuffer\nHuman:${msg.data()['Human']}\nAI:${msg.data()['AI']}";
               }
-              print(_memoryBuffer);
+              // print(_memoryBuffer);
 
               if (_needsScroll) {
                 WidgetsBinding.instance

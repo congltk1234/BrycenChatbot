@@ -37,7 +37,7 @@ class _SummarizeScreenstate extends State<SummarizeScreen> {
   int k_memory = 3;
   var _memoryBuffer = '';
   late List<dynamic> memory;
-
+  var _isLoading = false;
   late ScrollController _listScrollController;
   bool _needsScroll = true;
   late FocusNode focusNode;
@@ -65,6 +65,9 @@ class _SummarizeScreenstate extends State<SummarizeScreen> {
   }
 
   void _uploadedFile(String path) async {
+    setState(() {
+      _isLoading = true;
+    });
     TextLoader loader = TextLoader(path);
     const textSplitter = RecursiveCharacterTextSplitter();
     final docs = await loader.load();
@@ -153,7 +156,6 @@ class _SummarizeScreenstate extends State<SummarizeScreen> {
       "createdAt": Timestamp.now(),
     });
 
-    // suggestList.add("What's the main topic?");
     for (var i in suggestList) {
       await FirebaseFirestore.instance
           .collection("users")
@@ -169,6 +171,7 @@ class _SummarizeScreenstate extends State<SummarizeScreen> {
     print('Uploaded Summarize');
     setState(() {
       widget.hasFile = true;
+      _isLoading = false;
     });
   }
 
@@ -214,44 +217,51 @@ class _SummarizeScreenstate extends State<SummarizeScreen> {
               if (!chatSnapshots.hasData || chatSnapshots.data!.docs.isEmpty) {
                 return Scaffold(
                   appBar: ConfigAppBar(title: widget.chatTitle),
-                  body: Column(
-                    children: [
-                      Expanded(
-                        child: Center(
-                          child: ElevatedButton.icon(
-                            style: ButtonStyle(
-                              minimumSize: MaterialStateProperty.all<Size>(
-                                const Size(
-                                  200,
-                                  70,
+                  body: _isLoading
+                      ? const Center(
+                          child: CircularProgressIndicator(
+                            backgroundColor: Color.fromARGB(255, 255, 246, 246),
+                          ),
+                        )
+                      : Column(
+                          children: [
+                            Expanded(
+                              child: Center(
+                                child: ElevatedButton.icon(
+                                  style: ButtonStyle(
+                                    minimumSize:
+                                        MaterialStateProperty.all<Size>(
+                                      const Size(
+                                        200,
+                                        70,
+                                      ),
+                                    ),
+                                  ),
+                                  icon: const Icon(
+                                    Icons.cloud_upload,
+                                    size: 30,
+                                  ),
+                                  label: const Text(
+                                    "Upload File",
+                                    style: TextStyle(fontSize: 25),
+                                  ),
+                                  onPressed: () async {
+                                    final result = await FilePicker.platform
+                                        .pickFiles(withData: true);
+
+                                    if (result == null) return;
+                                    PlatformFile file = result.files.first;
+
+                                    final path = file.path;
+                                    _uploadedFile(
+                                      path!,
+                                    );
+                                  },
                                 ),
                               ),
                             ),
-                            icon: const Icon(
-                              Icons.cloud_upload,
-                              size: 30,
-                            ),
-                            label: const Text(
-                              "Upload File",
-                              style: TextStyle(fontSize: 25),
-                            ),
-                            onPressed: () async {
-                              final result = await FilePicker.platform
-                                  .pickFiles(withData: true);
-
-                              if (result == null) return;
-                              PlatformFile file = result.files.first;
-
-                              final path = file.path;
-                              _uploadedFile(
-                                path!,
-                              );
-                            },
-                          ),
+                          ],
                         ),
-                      ),
-                    ],
-                  ),
                 );
               }
 
@@ -278,43 +288,52 @@ class _SummarizeScreenstate extends State<SummarizeScreen> {
               // }
               return Scaffold(
                 appBar: ConfigAppBar(title: widget.chatTitle),
-                body: Column(
-                  children: [
-                    Expanded(
-                      child: ListView.builder(
-                          controller: _listScrollController,
-                          itemCount: lengthHistory,
-                          itemBuilder: (context, index) {
-                            final chatMessage = loadedMessages[index].data();
+                body: _isLoading
+                    ? const Center(
+                        child: CircularProgressIndicator(
+                          backgroundColor: Color.fromARGB(255, 255, 246, 246),
+                        ),
+                      )
+                    : Column(
+                        children: [
+                          Expanded(
+                            child: ListView.builder(
+                                controller: _listScrollController,
+                                itemCount: lengthHistory,
+                                itemBuilder: (context, index) {
+                                  final chatMessage =
+                                      loadedMessages[index].data();
 
-                            return ChatItem(
-                              humanMessage: chatMessage["Human"],
-                              botResponse: chatMessage["AI"],
-                              tokens: chatMessage["totalTokens"],
-                              timeStamp: DateFormat.yMMMd().add_jm().format(
-                                  DateTime.parse(chatMessage["createdAt"]
-                                      .toDate()
-                                      .toString())),
-                              shouldAnimate: lengthHistory < 1
-                                  ? lengthHistory == index
-                                  : lengthHistory - 1 == index,
-                            );
-                          }),
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.all(12.0),
-                      child: TextAndVoiceField(
-                        uid: widget.uid,
-                        userName: widget.userName,
-                        apiKey: widget.apiKey,
-                        memory: _memoryBuffer,
-                        taskMode: 'summarize',
-                        chatID: widget.chatTitleID,
+                                  return ChatItem(
+                                    humanMessage: chatMessage["Human"],
+                                    botResponse: chatMessage["AI"],
+                                    tokens: chatMessage["totalTokens"],
+                                    timeStamp: DateFormat.yMMMd()
+                                        .add_jm()
+                                        .format(DateTime.parse(
+                                            chatMessage["createdAt"]
+                                                .toDate()
+                                                .toString())),
+                                    shouldAnimate: lengthHistory < 1
+                                        ? lengthHistory == index
+                                        : lengthHistory - 1 == index,
+                                  );
+                                }),
+                          ),
+                          Padding(
+                            padding: const EdgeInsets.all(12.0),
+                            child: TextAndVoiceField(
+                              uid: widget.uid,
+                              userName: widget.userName,
+                              apiKey: widget.apiKey,
+                              memory: _memoryBuffer,
+                              taskMode: 'summarize',
+                              chatID: widget.chatTitleID,
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                        ],
                       ),
-                    ),
-                    const SizedBox(height: 8),
-                  ],
-                ),
               );
             case ConnectionState.done:
               break;
