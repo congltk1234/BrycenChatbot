@@ -71,6 +71,9 @@ class _SummarizeScreenstate extends ConsumerState<SummarizeScreen> {
   }
 
   void documentQA(String message) async {
+    setState(() {
+      _isLoading = true;
+    });
     final embeddings = OpenAIEmbeddings(apiKey: widget.apiKey);
     final llm =
         ChatOpenAI(apiKey: widget.apiKey, model: 'gpt-3.5-turbo-16k-0613');
@@ -125,6 +128,9 @@ class _SummarizeScreenstate extends ConsumerState<SummarizeScreen> {
       "Human": message.trim(),
       "AI": res["result"].toString().trim(),
       'totalTokens': 0,
+    });
+    setState(() {
+      _isLoading = false;
     });
   }
 
@@ -348,11 +354,11 @@ class _SummarizeScreenstate extends ConsumerState<SummarizeScreen> {
               // }
               // print(_memoryBuffer);
 
-              // if (_needsScroll) {
-              //   WidgetsBinding.instance
-              //       .addPostFrameCallback((_) => scrollListToEND());
-              //   // _needsScroll = false;
-              // }
+              if (_needsScroll) {
+                WidgetsBinding.instance
+                    .addPostFrameCallback((_) => scrollListToEND());
+                // _needsScroll = false;
+              }
               return Scaffold(
                 appBar: ConfigAppBar(title: widget.chatTitle),
                 body: _isLoading
@@ -381,9 +387,7 @@ class _SummarizeScreenstate extends ConsumerState<SummarizeScreen> {
                                             chatMessage["createdAt"]
                                                 .toDate()
                                                 .toString())),
-                                    shouldAnimate: lengthHistory < 1
-                                        ? lengthHistory == index
-                                        : lengthHistory - 1 == index,
+                                    shouldAnimate: false,
                                   );
                                 }),
                           ),

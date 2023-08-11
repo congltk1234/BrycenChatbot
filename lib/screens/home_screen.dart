@@ -4,7 +4,6 @@ import 'package:brycen_chatbot/screens/chat_screen.dart';
 import 'package:brycen_chatbot/screens/summarize_screen.dart';
 import 'package:brycen_chatbot/values/share_keys.dart';
 import 'package:brycen_chatbot/widget/app_bar.dart';
-import 'package:brycen_chatbot/widget/menu.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -35,7 +34,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   var _initUsername = '';
 
   bool _isValid = false;
-  // bool _isLoading = false;
+  bool _isLoading = false;
   bool passwordVisible = true;
   var _isExpired = false;
   bool? _isAPI;
@@ -494,66 +493,88 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                       showDialog(
                         context: context,
                         builder: (ctx) => AlertDialog(
+                          actionsAlignment: MainAxisAlignment.spaceAround,
                           title: const Text('Delete chat?'),
                           content: const Text(
                               "Warning: You can't undo this action!"),
                           actions: [
                             TextButton(
-                              onPressed: () async {
-                                final instance = FirebaseFirestore.instance;
-                                final batch = instance.batch();
-                                var document = instance
-                                    .collection("users")
-                                    .doc(_initUID)
-                                    .collection(mode ? "chat" : "summarize")
-                                    .doc(widgetOptions[index].chatid!);
-                                if (mode) {
-                                  var snapshots = await document
-                                      .collection('chat_history')
-                                      .get();
-                                  for (var doc in snapshots.docs) {
-                                    batch.delete(doc.reference);
-                                  }
-                                } else {
-                                  var snapshots = await document
-                                      .collection('QuestionAnswering')
-                                      .get();
-                                  for (var doc in snapshots.docs) {
-                                    batch.delete(doc.reference);
-                                  }
-                                  snapshots = await document
-                                      .collection('embeddedVectors')
-                                      .get();
-                                  for (var doc in snapshots.docs) {
-                                    batch.delete(doc.reference);
-                                  }
-                                  snapshots = await document
-                                      .collection('suggestion')
-                                      .get();
-                                  for (var doc in snapshots.docs) {
-                                    batch.delete(doc.reference);
-                                  }
-                                }
-                                await batch.commit();
+                              style: ButtonStyle(
+                                backgroundColor: MaterialStateProperty.all(
+                                    Theme.of(context)
+                                        .colorScheme
+                                        .primary
+                                        .withOpacity(0.05)),
+                              ),
+                              onPressed: !_isLoading
+                                  ? () async {
+                                      setState(() {
+                                        _isLoading = true;
+                                      });
+                                      final instance =
+                                          FirebaseFirestore.instance;
+                                      final batch = instance.batch();
+                                      var document = instance
+                                          .collection("users")
+                                          .doc(_initUID)
+                                          .collection(
+                                              mode ? "chat" : "summarize")
+                                          .doc(widgetOptions[index].chatid!);
+                                      if (mode) {
+                                        var snapshots = await document
+                                            .collection('chat_history')
+                                            .get();
+                                        for (var doc in snapshots.docs) {
+                                          batch.delete(doc.reference);
+                                        }
+                                      } else {
+                                        var snapshots = await document
+                                            .collection('QuestionAnswering')
+                                            .get();
+                                        for (var doc in snapshots.docs) {
+                                          batch.delete(doc.reference);
+                                        }
+                                        snapshots = await document
+                                            .collection('embeddedVectors')
+                                            .get();
+                                        for (var doc in snapshots.docs) {
+                                          batch.delete(doc.reference);
+                                        }
+                                        snapshots = await document
+                                            .collection('suggestion')
+                                            .get();
+                                        for (var doc in snapshots.docs) {
+                                          batch.delete(doc.reference);
+                                        }
+                                      }
+                                      await batch.commit();
 
-                                await FirebaseFirestore.instance
-                                    .collection("users")
-                                    .doc(_initUID)
-                                    .collection(mode ? "chat" : "summarize")
-                                    .doc(widgetOptions[index].chatid!)
-                                    .delete()
-                                    .then((value) => print("ChatTitle Deleted"))
-                                    .catchError((error) =>
-                                        print("Failed to delete: $error"));
+                                      await FirebaseFirestore.instance
+                                          .collection("users")
+                                          .doc(_initUID)
+                                          .collection(
+                                              mode ? "chat" : "summarize")
+                                          .doc(widgetOptions[index].chatid!)
+                                          .delete()
+                                          .then((value) =>
+                                              print("ChatTitle Deleted"))
+                                          .catchError((error) => print(
+                                              "Failed to delete: $error"));
 
-                                setState(() {
-                                  widgetOptions.removeAt(index);
-                                });
-                                Navigator.pop(ctx);
-                              },
+                                      setState(() {
+                                        widgetOptions.removeAt(index);
+                                        _isLoading = false;
+                                      });
+                                      Navigator.pop(ctx);
+                                    }
+                                  : null,
                               child: const Text('Okay'),
                             ),
                             TextButton(
+                                style: ButtonStyle(
+                                  foregroundColor:
+                                      MaterialStateProperty.all(Colors.red),
+                                ),
                                 onPressed: () {
                                   Navigator.of(context).pop();
                                   setState(() {});

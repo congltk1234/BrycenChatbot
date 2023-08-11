@@ -46,16 +46,18 @@ class _TextAndVoiceFieldState extends State<TextAndVoiceField> {
   var _isReplying = false;
   var _isListening = false;
   final VoiceHandler voiceHandler = VoiceHandler();
-
+  late FocusNode focusNode;
   @override
   void initState() {
     voiceHandler.initSpeech();
+    focusNode = FocusNode();
     super.initState();
   }
 
   @override
   void dispose() {
     _messageController.dispose();
+    focusNode.dispose();
     super.dispose();
   }
 
@@ -65,6 +67,7 @@ class _TextAndVoiceFieldState extends State<TextAndVoiceField> {
       children: [
         Expanded(
           child: TextField(
+            focusNode: focusNode,
             controller: _messageController,
             onChanged: (value) {
               value.isNotEmpty
@@ -85,6 +88,7 @@ class _TextAndVoiceFieldState extends State<TextAndVoiceField> {
           sendTextMessage: () {
             final message = _messageController.text;
             _messageController.clear();
+            focusNode.unfocus();
 
             /// Switch Case
             if (widget._taskMode == 'chat') {
