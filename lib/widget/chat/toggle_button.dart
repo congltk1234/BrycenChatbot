@@ -32,7 +32,7 @@ class _ToggleButtonState extends State<ToggleButton> {
       style: ElevatedButton.styleFrom(
           backgroundColor: widget._isListening
               ? Colors.red
-              : Theme.of(context).colorScheme.secondary,
+              : Theme.of(context).colorScheme.primary.withOpacity(0.6),
           foregroundColor: Theme.of(context).colorScheme.onSecondary,
           shape: const CircleBorder(),
           padding: const EdgeInsets.all(15)),

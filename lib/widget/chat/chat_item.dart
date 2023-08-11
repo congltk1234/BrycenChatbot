@@ -41,7 +41,10 @@ class ChatItem extends StatelessWidget {
       child: Column(
         children: [
           /// TimeStamp
-          Text(timeStamp),
+          Text(
+            timeStamp,
+            style: TextStyle(color: Theme.of(context).colorScheme.secondary),
+          ),
 
           /// User Message
           if (humanMessage != '') const SizedBox(height: 5),
@@ -66,7 +69,8 @@ class ChatItem extends StatelessWidget {
                   constraints: BoxConstraints(
                       maxWidth: MediaQuery.of(context).size.width * 0.5),
                   decoration: BoxDecoration(
-                      color: Theme.of(context).colorScheme.secondary,
+                      color: Theme.of(context).colorScheme.primary,
+                      // .withOpacity(0.8),
                       borderRadius: const BorderRadius.only(
                         topLeft: Radius.circular(15),
                         topRight: Radius.circular(15),
@@ -131,11 +135,13 @@ class ChatItem extends StatelessWidget {
                       icon: Icon(
                           _isSpeaking ? Icons.volume_mute : Icons.volume_up),
                       iconSize: 20,
+                      color: Theme.of(context).colorScheme.secondary,
                     ),
                     GestureDetector(
-                      child: const Icon(
+                      child: Icon(
                         Icons.copy,
                         size: 20,
+                        color: Theme.of(context).colorScheme.secondary,
                       ),
                       onTap: () {
                         Clipboard.setData(ClipboardData(text: botResponse));

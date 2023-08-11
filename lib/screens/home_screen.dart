@@ -359,8 +359,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     return Scaffold(
       key: scaffoldKey,
       // appBar: const ConfigAppBar(title: 'Home Screen'),
-      drawer: DrawerMenu(context, chatTitle, true),
-      endDrawer: DrawerMenu(context, summarizeTitle, false),
+      drawer: SafeArea(
+        child: DrawerMenu(context, chatTitle, true),
+      ),
+      endDrawer: SafeArea(child: DrawerMenu(context, summarizeTitle, false)),
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -399,8 +401,14 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         child: Column(
           children: [
             ListTile(
+              tileColor: Theme.of(context).colorScheme.primary.withOpacity(0.6),
+              textColor: Colors.white,
+              iconColor: Colors.white,
               leading: const Icon(Icons.add),
-              title: const Text('New Chat'),
+              title: const Text(
+                'New Chat',
+                textScaleFactor: 1.2,
+              ),
               onTap: () async {
                 await FirebaseFirestore.instance
                     .collection("users")
@@ -481,57 +489,97 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     background: Container(
                       color: Colors.red,
                     ),
-                    onDismissed: (DismissDirection direction) async {
-                      final instance = FirebaseFirestore.instance;
-                      final batch = instance.batch();
-                      var document = instance
-                          .collection("users")
-                          .doc(_initUID)
-                          .collection(mode ? "chat" : "summarize")
-                          .doc(widgetOptions[index].chatid!);
-                      if (mode) {
-                        var snapshots =
-                            await document.collection('chat_history').get();
-                        for (var doc in snapshots.docs) {
-                          batch.delete(doc.reference);
-                        }
-                      } else {
-                        var snapshots = await document
-                            .collection('QuestionAnswering')
-                            .get();
-                        for (var doc in snapshots.docs) {
-                          batch.delete(doc.reference);
-                        }
-                        snapshots =
-                            await document.collection('embeddedVectors').get();
-                        for (var doc in snapshots.docs) {
-                          batch.delete(doc.reference);
-                        }
-                        snapshots =
-                            await document.collection('suggestion').get();
-                        for (var doc in snapshots.docs) {
-                          batch.delete(doc.reference);
-                        }
-                      }
-                      await batch.commit();
+                    onDismissed: (DismissDirection direction) {
+                      showDialog(
+                        context: context,
+                        builder: (ctx) => AlertDialog(
+                          title: const Text('Delete chat?'),
+                          content: const Text(
+                              "Warning: You can't undo this action!"),
+                          actions: [
+                            TextButton(
+                              onPressed: () async {
+                                final instance = FirebaseFirestore.instance;
+                                final batch = instance.batch();
+                                var document = instance
+                                    .collection("users")
+                                    .doc(_initUID)
+                                    .collection(mode ? "chat" : "summarize")
+                                    .doc(widgetOptions[index].chatid!);
+                                if (mode) {
+                                  var snapshots = await document
+                                      .collection('chat_history')
+                                      .get();
+                                  for (var doc in snapshots.docs) {
+                                    batch.delete(doc.reference);
+                                  }
+                                } else {
+                                  var snapshots = await document
+                                      .collection('QuestionAnswering')
+                                      .get();
+                                  for (var doc in snapshots.docs) {
+                                    batch.delete(doc.reference);
+                                  }
+                                  snapshots = await document
+                                      .collection('embeddedVectors')
+                                      .get();
+                                  for (var doc in snapshots.docs) {
+                                    batch.delete(doc.reference);
+                                  }
+                                  snapshots = await document
+                                      .collection('suggestion')
+                                      .get();
+                                  for (var doc in snapshots.docs) {
+                                    batch.delete(doc.reference);
+                                  }
+                                }
+                                await batch.commit();
 
-                      await FirebaseFirestore.instance
-                          .collection("users")
-                          .doc(_initUID)
-                          .collection(mode ? "chat" : "summarize")
-                          .doc(widgetOptions[index].chatid!)
-                          .delete()
-                          .then((value) => print("ChatTitle Deleted"))
-                          .catchError(
-                              (error) => print("Failed to delete: $error"));
+                                await FirebaseFirestore.instance
+                                    .collection("users")
+                                    .doc(_initUID)
+                                    .collection(mode ? "chat" : "summarize")
+                                    .doc(widgetOptions[index].chatid!)
+                                    .delete()
+                                    .then((value) => print("ChatTitle Deleted"))
+                                    .catchError((error) =>
+                                        print("Failed to delete: $error"));
 
-                      setState(() {
-                        widgetOptions.removeAt(index);
-                      });
+                                setState(() {
+                                  widgetOptions.removeAt(index);
+                                });
+                                Navigator.pop(ctx);
+                              },
+                              child: const Text('Okay'),
+                            ),
+                            TextButton(
+                                onPressed: () {
+                                  Navigator.of(context).pop();
+                                  setState(() {});
+                                },
+                                child: const Text('Cancel')),
+                          ],
+                        ),
+                      );
                     },
                     child: ListTile(
-                      leading: const Icon(Icons.chat_outlined),
-                      title: Text(widgetOptions[index].chattitle!),
+                      // trailing: Icon(
+                      //   Icons.arrow_forward_ios,
+                      //   color: Colors.black26,
+                      //   size: 15,
+                      // ),
+                      shape: RoundedRectangleBorder(
+                        side: BorderSide(color: Colors.black, width: 0.1),
+                      ),
+                      leading: Icon(
+                        Icons.chat_outlined,
+                        color: Theme.of(context).colorScheme.secondary,
+                      ),
+                      title: Text(
+                        widgetOptions[index].chattitle!,
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                      ),
                       onTap: () async {
                         Navigator.push(
                           context,
@@ -571,7 +619,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             ListTile(
               leading: const Icon(Icons.home),
               title: Text('Home'),
-              onTap: () {},
+              onTap: () {
+                Navigator.of(context).pop();
+              },
             ),
             ListTile(
               leading: Icon(Icons.settings),

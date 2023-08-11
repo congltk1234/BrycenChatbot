@@ -14,6 +14,8 @@ class ConfigAppBar extends StatelessWidget implements PreferredSizeWidget {
   Widget build(BuildContext context) {
     return AppBar(
       title: Text(title),
+      backgroundColor: Theme.of(context).colorScheme.primary.withOpacity(0.78),
+      foregroundColor: Colors.white,
       actions: [
         PopupMenuButton(itemBuilder: (context) {
           return [
