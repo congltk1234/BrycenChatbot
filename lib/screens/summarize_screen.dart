@@ -67,7 +67,7 @@ class _SummarizeScreenstate extends ConsumerState<SummarizeScreen> {
   void scrollListToEND() {
     _listScrollController.animateTo(
         _listScrollController.position.maxScrollExtent,
-        duration: const Duration(milliseconds: 200),
+        duration: const Duration(milliseconds: 100),
         curve: Curves.easeInOut);
   }
 

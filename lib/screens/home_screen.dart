@@ -395,6 +395,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
   Drawer DrawerMenu(
       BuildContext context, List<ChatTitleModel> widgetOptions, bool mode) {
+    // mode
+    //     ? ref.read(chatTitleProvider.notifier).fetchDatafromFireStore(_initUID)
+    //     : ref.read(summaryProvider.notifier).fetchDatafromFireStore(_initUID);
     return Drawer(
       child: SafeArea(
         child: Column(
@@ -638,6 +641,16 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               ),
             ),
             Divider(height: 1),
+            ListTile(
+              leading: Icon(mode ? Icons.summarize : Icons.aod),
+              title: Text(mode ? 'Summarize' : 'Chat Bot'),
+              onTap: () {
+                mode
+                    ? scaffoldKey.currentState!.openEndDrawer()
+                    : scaffoldKey.currentState!.openDrawer();
+                // Navigator.of(context).pop();
+              },
+            ),
             ListTile(
               leading: const Icon(Icons.home),
               title: Text('Home'),
