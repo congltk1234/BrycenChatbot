@@ -1,16 +1,19 @@
 import 'package:brycen_chatbot/const/prompt.dart';
+import 'package:brycen_chatbot/models/suggestQuestion.dart';
+import 'package:brycen_chatbot/providers/suggest_provider.dart';
 import 'package:brycen_chatbot/widget/app_bar.dart';
 import 'package:brycen_chatbot/widget/chat/chat_item.dart';
 import 'package:brycen_chatbot/widget/chat/text_and_voice.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:langchain/langchain.dart';
 import 'package:langchain_openai/langchain_openai.dart';
 import 'package:collection/collection.dart';
 
-class SummarizeScreen extends StatefulWidget {
+class SummarizeScreen extends ConsumerStatefulWidget {
   SummarizeScreen({
     super.key,
     required this.chatTitleID,
@@ -28,12 +31,12 @@ class SummarizeScreen extends StatefulWidget {
   String userName;
   bool hasFile;
   @override
-  State<StatefulWidget> createState() {
+  ConsumerState<ConsumerStatefulWidget> createState() {
     return _SummarizeScreenstate();
   }
 }
 
-class _SummarizeScreenstate extends State<SummarizeScreen> {
+class _SummarizeScreenstate extends ConsumerState<SummarizeScreen> {
   int k_memory = 3;
   var _memoryBuffer = '';
   late List<dynamic> memory;
@@ -47,6 +50,9 @@ class _SummarizeScreenstate extends State<SummarizeScreen> {
     _listScrollController = ScrollController();
     focusNode = FocusNode();
     print(widget.chatTitleID);
+    ref
+        .read(suggestProvider.notifier)
+        .fetchDatafromFireStore(widget.uid, widget.chatTitleID);
     super.initState();
   }
 
@@ -62,6 +68,64 @@ class _SummarizeScreenstate extends State<SummarizeScreen> {
         _listScrollController.position.maxScrollExtent,
         duration: const Duration(milliseconds: 200),
         curve: Curves.easeInOut);
+  }
+
+  void documentQA(String message) async {
+    final embeddings = OpenAIEmbeddings(apiKey: widget.apiKey);
+    final llm =
+        ChatOpenAI(apiKey: widget.apiKey, model: 'gpt-3.5-turbo-16k-0613');
+
+    final storedVectors = await FirebaseFirestore.instance
+        .collection("users")
+        .doc(widget.uid)
+        .collection('summarize')
+        .doc(widget.chatTitleID)
+        .collection("embeddedVectors")
+        .get();
+
+    List<List<double>> vectorList = [];
+    List<Document> docList = [];
+
+    for (var element in storedVectors.docs) {
+      List<double> embedded =
+          List<double>.from(element.data()['embed'] as List);
+      vectorList.add(embedded);
+      docList.add(Document(
+          pageContent: element.data()['content'],
+          metadata: element.data()['metadata']));
+    }
+    print('load vector');
+    final listVector = MemoryVectorStore(embeddings: embeddings);
+    listVector.addVectors(vectors: vectorList, documents: docList);
+    listVector.similaritySearch(query: 'User prompt');
+
+    final qaChain = OpenAIQAWithSourcesChain(llm: llm);
+    final docprompt = PromptTemplate.fromTemplate(
+      'Content: {page_content}\nSource: {source}',
+    );
+    final finalQAChain = StuffDocumentsChain(
+      llmChain: qaChain,
+      documentPrompt: docprompt,
+    );
+    final retrievalQA = RetrievalQAChain(
+      retriever: listVector.asRetriever(),
+      combineDocumentsChain: finalQAChain,
+    );
+
+    final res = await retrievalQA(message);
+    print('query');
+    await FirebaseFirestore.instance
+        .collection("users")
+        .doc(widget.uid)
+        .collection('summarize')
+        .doc(widget.chatTitleID)
+        .collection("QuestionAnswering")
+        .add({
+      "createdAt": Timestamp.now(),
+      "Human": message.trim(),
+      "AI": res["result"].toString().trim(),
+      'totalTokens': 0,
+    });
   }
 
   void _uploadedFile(String path) async {
@@ -177,6 +241,7 @@ class _SummarizeScreenstate extends State<SummarizeScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final List<SuggestModel> suggestList = ref.watch(suggestProvider);
     return StreamBuilder(
         stream: FirebaseFirestore.instance
             .collection("users")
@@ -202,11 +267,13 @@ class _SummarizeScreenstate extends State<SummarizeScreen> {
           }
           switch (chatSnapshots.connectionState) {
             case ConnectionState.waiting:
-              return const Center(
-                child: CircularProgressIndicator(
-                  backgroundColor: Color.fromARGB(255, 255, 246, 246),
-                ),
-              );
+              return Scaffold(
+                  appBar: ConfigAppBar(title: widget.chatTitle),
+                  body: const Center(
+                    child: CircularProgressIndicator(
+                      backgroundColor: Color.fromARGB(255, 255, 246, 246),
+                    ),
+                  ));
             case ConnectionState.none:
               return const Expanded(
                 child: Center(
@@ -320,8 +387,55 @@ class _SummarizeScreenstate extends State<SummarizeScreen> {
                                   );
                                 }),
                           ),
+                          ListView.builder(
+                            itemCount: suggestList.length,
+                            shrinkWrap: true,
+                            itemBuilder: (BuildContext context, int index) {
+                              return ActionChip(
+                                padding: const EdgeInsets.symmetric(
+                                    vertical: 5, horizontal: 8),
+                                backgroundColor: Theme.of(context)
+                                    .colorScheme
+                                    .primary
+                                    .withOpacity(0.07),
+                                label: Container(
+                                    constraints: BoxConstraints(
+                                        maxWidth:
+                                            MediaQuery.of(context).size.width *
+                                                0.7),
+                                    child: Text(
+                                      suggestList[index]
+                                          .suggestQuestion!
+                                          .trim(),
+                                      textScaleFactor: 0.85,
+                                      softWrap: true,
+                                      maxLines: 2,
+                                    )),
+                                shape: const StadiumBorder(side: BorderSide()),
+                                onPressed: () async {
+                                  documentQA(
+                                      suggestList[index].suggestQuestion!);
+
+                                  await FirebaseFirestore.instance
+                                      .collection("users")
+                                      .doc(widget.uid)
+                                      .collection("summarize")
+                                      .doc(widget.chatTitleID)
+                                      .collection('suggestion')
+                                      .doc(suggestList[index].id)
+                                      .delete()
+                                      .then((value) => print("Suggest Deleted"))
+                                      .catchError((error) =>
+                                          print("Failed to delete: $error"));
+                                  setState(() {
+                                    suggestList.removeAt(index);
+                                  });
+                                },
+                              );
+                            },
+                          ),
                           Padding(
-                            padding: const EdgeInsets.all(12.0),
+                            padding: const EdgeInsets.all(10.0),
                             child: TextAndVoiceField(
                               uid: widget.uid,
                               userName: widget.userName,

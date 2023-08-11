@@ -1,3 +1,4 @@
+import 'package:brycen_chatbot/const/prompt.dart';
 import 'package:flutter/material.dart';
 import 'package:dart_openai/dart_openai.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -136,8 +137,7 @@ class _TextAndVoiceFieldState extends State<TextAndVoiceField> {
   void sendTextMessage(String message) async {
     setReplyingState(true);
 // prompt
-    final prompt =
-        "Here's a conversation between user ${widget._initUsername} and AI: \n From given context \n ${widget._memory} \n response this message: $message";
+    final prompt = chat_prompt(widget._initUsername, widget._memory, message);
     print('send msg');
 
     /// Bot Response Chat GPT here

@@ -482,6 +482,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             Expanded(
               child: ListView.builder(
                 itemCount: widgetOptions.length,
+                // scrollDirection: Axis.horizontal,
                 itemBuilder: (BuildContext context, int index) {
                   // final chatTitles = chatTitle.reversed.toList();
                   return Dismissible(

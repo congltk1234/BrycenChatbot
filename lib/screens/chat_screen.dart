@@ -169,7 +169,6 @@ class _ChatScreenState extends State<ChatScreen> {
                             );
                           }),
                     ),
-                    Text('Hello Q1'),
                     Padding(
                       padding: const EdgeInsets.all(12.0),
                       child: TextAndVoiceField(
