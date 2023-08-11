@@ -10,7 +10,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:langchain/langchain.dart';
-import 'package:langchain_openai/langchain_openai.dart';
+import 'package:langchain_openai/langchain_openai.dart' as langOpenAI;
 import 'package:collection/collection.dart';
 
 class SummarizeScreen extends ConsumerStatefulWidget {
@@ -41,6 +41,7 @@ class _SummarizeScreenstate extends ConsumerState<SummarizeScreen> {
   var _memoryBuffer = '';
   late List<dynamic> memory;
   var _isLoading = false;
+  var _suggestLoading = false;
   late ScrollController _listScrollController;
   bool _needsScroll = true;
   late FocusNode focusNode;
@@ -72,11 +73,11 @@ class _SummarizeScreenstate extends ConsumerState<SummarizeScreen> {
 
   void documentQA(String message) async {
     setState(() {
-      _isLoading = true;
+      _suggestLoading = true;
     });
-    final embeddings = OpenAIEmbeddings(apiKey: widget.apiKey);
-    final llm =
-        ChatOpenAI(apiKey: widget.apiKey, model: 'gpt-3.5-turbo-16k-0613');
+    final embeddings = langOpenAI.OpenAIEmbeddings(apiKey: widget.apiKey);
+    final llm = langOpenAI.ChatOpenAI(
+        apiKey: widget.apiKey, model: 'gpt-3.5-turbo-16k-0613');
 
     final storedVectors = await FirebaseFirestore.instance
         .collection("users")
@@ -102,7 +103,7 @@ class _SummarizeScreenstate extends ConsumerState<SummarizeScreen> {
     listVector.addVectors(vectors: vectorList, documents: docList);
     listVector.similaritySearch(query: 'User prompt');
 
-    final qaChain = OpenAIQAWithSourcesChain(llm: llm);
+    final qaChain = langOpenAI.OpenAIQAWithSourcesChain(llm: llm);
     final docprompt = PromptTemplate.fromTemplate(
       'Content: {page_content}\nSource: {source}',
     );
@@ -130,7 +131,7 @@ class _SummarizeScreenstate extends ConsumerState<SummarizeScreen> {
       'totalTokens': 0,
     });
     setState(() {
-      _isLoading = false;
+      _suggestLoading = false;
     });
   }
 
@@ -154,7 +155,7 @@ class _SummarizeScreenstate extends ConsumerState<SummarizeScreen> {
         )
         .toList(growable: false);
 
-    final embeddings = OpenAIEmbeddings(apiKey: widget.apiKey);
+    final embeddings = langOpenAI.OpenAIEmbeddings(apiKey: widget.apiKey);
     final docSearch = await MemoryVectorStore.fromDocuments(
       documents: textsWithSources,
       embeddings: embeddings,
@@ -175,7 +176,7 @@ class _SummarizeScreenstate extends ConsumerState<SummarizeScreen> {
     }
     print('Uploaded Embeddings to FireStore');
     // listVector.
-    final llm = ChatOpenAI(
+    final llm = langOpenAI.ChatOpenAI(
         temperature: 0, apiKey: widget.apiKey, model: 'gpt-3.5-turbo-16k-0613');
     //// summarize
     final docPrompt = PromptTemplate.fromTemplate(summarize_template);
@@ -242,6 +243,9 @@ class _SummarizeScreenstate extends ConsumerState<SummarizeScreen> {
     setState(() {
       widget.hasFile = true;
       _isLoading = false;
+      ref
+          .read(suggestProvider.notifier)
+          .fetchDatafromFireStore(widget.uid, widget.chatTitleID);
     });
   }
 
@@ -416,25 +420,28 @@ class _SummarizeScreenstate extends ConsumerState<SummarizeScreen> {
                                       maxLines: 2,
                                     )),
                                 shape: const StadiumBorder(side: BorderSide()),
-                                onPressed: () async {
-                                  documentQA(
-                                      suggestList[index].suggestQuestion!);
+                                onPressed: _suggestLoading
+                                    ? null
+                                    : () async {
+                                        documentQA(suggestList[index]
+                                            .suggestQuestion!);
 
-                                  await FirebaseFirestore.instance
-                                      .collection("users")
-                                      .doc(widget.uid)
-                                      .collection("summarize")
-                                      .doc(widget.chatTitleID)
-                                      .collection('suggestion')
-                                      .doc(suggestList[index].id)
-                                      .delete()
-                                      .then((value) => print("Suggest Deleted"))
-                                      .catchError((error) =>
-                                          print("Failed to delete: $error"));
-                                  setState(() {
-                                    suggestList.removeAt(index);
-                                  });
-                                },
+                                        await FirebaseFirestore.instance
+                                            .collection("users")
+                                            .doc(widget.uid)
+                                            .collection("summarize")
+                                            .doc(widget.chatTitleID)
+                                            .collection('suggestion')
+                                            .doc(suggestList[index].id)
+                                            .delete()
+                                            .then((value) =>
+                                                print("Suggest Deleted"))
+                                            .catchError((error) => print(
+                                                "Failed to delete: $error"));
+                                        setState(() {
+                                          suggestList.removeAt(index);
+                                        });
+                                      },
                               );
                             },
                           ),
