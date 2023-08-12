@@ -413,12 +413,24 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   children: [
                     ElevatedButton(
                       onPressed: () {
+                        ref
+                            .read(chatTitleProvider.notifier)
+                            .fetchDatafromFireStore(_initUID);
+                        ref
+                            .read(summaryProvider.notifier)
+                            .fetchDatafromFireStore(_initUID);
                         scaffoldKey.currentState!.openDrawer();
                       },
                       child: const Text('Chatbot'),
                     ),
                     ElevatedButton(
                       onPressed: () {
+                        ref
+                            .read(chatTitleProvider.notifier)
+                            .fetchDatafromFireStore(_initUID);
+                        ref
+                            .read(summaryProvider.notifier)
+                            .fetchDatafromFireStore(_initUID);
                         scaffoldKey.currentState!.openEndDrawer();
                       },
                       child: const Text('Summary'),
@@ -523,9 +535,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             Expanded(
               child: ListView.builder(
                 itemCount: widgetOptions.length,
-                // scrollDirection: Axis.horizontal,
                 itemBuilder: (BuildContext context, int index) {
-                  // final chatTitles = chatTitle.reversed.toList();
                   return Dismissible(
                     key: UniqueKey(),
                     background: Container(
@@ -618,7 +628,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                                       MaterialStateProperty.all(Colors.red),
                                 ),
                                 onPressed: () {
-                                  Navigator.of(context).pop();
+                                  Navigator.pop(ctx);
                                   setState(() {});
                                 },
                                 child: const Text('Cancel')),
@@ -681,7 +691,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             ),
             const Divider(height: 1),
             ListTile(
-              leading: Icon(mode ? Icons.summarize : Icons.aod),
+              tileColor: Theme.of(context).colorScheme.secondaryContainer,
+              leading: Icon(mode ? Icons.edit_document : Icons.aod),
               title: Text(mode ? 'Summarize' : 'Chat Bot'),
               onTap: () {
                 mode
@@ -691,6 +702,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               },
             ),
             ListTile(
+              tileColor:
+                  Theme.of(context).colorScheme.secondary.withOpacity(0.15),
               leading: const Icon(Icons.home),
               title: const Text('Home'),
               onTap: () {
@@ -698,6 +711,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               },
             ),
             ListTile(
+              tileColor:
+                  Theme.of(context).colorScheme.secondary.withOpacity(0.15),
               leading: Icon(Icons.settings),
               title: Text('Setting'),
               onTap: () {},

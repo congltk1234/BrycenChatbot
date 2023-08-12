@@ -7,6 +7,42 @@
   "client": [
     {
       "client_info": {
+        "mobilesdk_app_id": "1:84329957911:android:b45324cc8d8dcc56d46a52",
+        "android_client_info": {
+          "package_name": "com.example.brycen_chat_app"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "84329957911-78unifjsqlt06hakjeq8dh508c6cqofr.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBfs6_dOQl1ezns4ARBMnWhkmpZXplm3oE"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "84329957911-78unifjsqlt06hakjeq8dh508c6cqofr.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "84329957911-555fsklsg31junru3ut7arjsfp8ge4vj.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.chatApp"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
         "mobilesdk_app_id": "1:84329957911:android:b995cc420c3d800dd46a52",
         "android_client_info": {
           "package_name": "com.example.brycen_chatbot"
@@ -46,6 +82,42 @@
         "mobilesdk_app_id": "1:84329957911:android:ca69d10521226e24d46a52",
         "android_client_info": {
           "package_name": "com.example.chat_app"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "84329957911-78unifjsqlt06hakjeq8dh508c6cqofr.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBfs6_dOQl1ezns4ARBMnWhkmpZXplm3oE"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "84329957911-78unifjsqlt06hakjeq8dh508c6cqofr.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "84329957911-555fsklsg31junru3ut7arjsfp8ge4vj.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.chatApp"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:84329957911:android:38c694fa9d9086d1d46a52",
+        "android_client_info": {
+          "package_name": "com.example.shuken"
         }
       },
       "oauth_client": [
