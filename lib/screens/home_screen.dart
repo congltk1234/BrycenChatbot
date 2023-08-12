@@ -1,9 +1,10 @@
+import 'dart:io';
+
 import 'package:brycen_chatbot/models/chatTitle.dart';
 import 'package:brycen_chatbot/providers/menu_provider.dart';
 import 'package:brycen_chatbot/screens/chat_screen.dart';
 import 'package:brycen_chatbot/screens/summarize_screen.dart';
 import 'package:brycen_chatbot/values/share_keys.dart';
-import 'package:brycen_chatbot/widget/app_bar.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -42,6 +43,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   String? newID;
   @override
   void initState() {
+    checkInternet();
     _getLocalValue();
     super.initState();
   }
@@ -72,7 +74,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       // ignore: use_build_context_synchronously
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          // ignore: use_build_context_synchronously
           backgroundColor: Theme.of(context).colorScheme.error,
           content: Text(message['error']['message']),
         ),
@@ -150,7 +151,23 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     }
   }
 
-  Future<void> _getLocalValue() async {
+  void checkInternet() async {
+    try {
+      final result = await InternetAddress.lookup('example.com');
+      if (result.isNotEmpty && result[0].rawAddress.isNotEmpty) {
+        print('connected');
+      }
+    } on SocketException catch (_) {
+      print('not connected');
+
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        backgroundColor: Theme.of(context).colorScheme.error,
+        content: Text('not connected'),
+      ));
+    }
+  }
+
+  void _getLocalValue() async {
     prefs = await SharedPreferences.getInstance();
     setState(() {
       _initAPIKey = prefs.getString(ShareKeys.APIkey) ?? '';
@@ -640,7 +657,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 },
               ),
             ),
-            Divider(height: 1),
+            const Divider(height: 1),
             ListTile(
               leading: Icon(mode ? Icons.summarize : Icons.aod),
               title: Text(mode ? 'Summarize' : 'Chat Bot'),
@@ -653,7 +670,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             ),
             ListTile(
               leading: const Icon(Icons.home),
-              title: Text('Home'),
+              title: const Text('Home'),
               onTap: () {
                 Navigator.of(context).pop();
               },

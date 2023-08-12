@@ -23,6 +23,7 @@ class ChatItem extends StatelessWidget {
   bool _isSpeaking = false;
 
   void _speak() async {
+    // https://www.youtube.com/watch?v=wDWoD1AaLu8
     _isSpeaking = !_isSpeaking;
     if (_isSpeaking) {
       await flutterT2S.speak(botResponse);
