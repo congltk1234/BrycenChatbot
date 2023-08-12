@@ -6,6 +6,7 @@ import 'package:brycen_chatbot/screens/chat_screen.dart';
 import 'package:brycen_chatbot/screens/summarize_screen.dart';
 import 'package:brycen_chatbot/values/share_keys.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:connection_notifier/connection_notifier.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -379,32 +380,53 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         child: DrawerMenu(context, chatTitle, true),
       ),
       endDrawer: SafeArea(child: DrawerMenu(context, summarizeTitle, false)),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            userForm,
-            if (_isValid)
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+      body: ConnectionNotifierToggler(
+        onConnectionStatusChanged: (connected) {
+          if (connected == null) return;
+        },
+        disconnected: Center(
+            key: UniqueKey(),
+            child: TextButton(
+              onPressed: () {},
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  ElevatedButton(
-                    onPressed: () {
-                      scaffoldKey.currentState!.openDrawer();
-                      // Navigator.pushNamed(context, ChatScreen.id);
-                    },
-                    child: const Text('Chatbot'),
-                  ),
-                  ElevatedButton(
-                    onPressed: () {
-                      // Navigator.pushNamed(context, SummarizeScreen.id);
-                      scaffoldKey.currentState!.openEndDrawer();
-                    },
-                    child: const Text('Summary'),
+                  Image.asset('assets/images/logoBrycen.png'),
+                  const Text(
+                    'Please check your internet connection',
+                    style: TextStyle(
+                      color: Colors.red,
+                      fontSize: 20,
+                    ),
                   ),
                 ],
               ),
-          ],
+            )),
+        connected: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: <Widget>[
+              userForm,
+              if (_isValid)
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: [
+                    ElevatedButton(
+                      onPressed: () {
+                        scaffoldKey.currentState!.openDrawer();
+                      },
+                      child: const Text('Chatbot'),
+                    ),
+                    ElevatedButton(
+                      onPressed: () {
+                        scaffoldKey.currentState!.openEndDrawer();
+                      },
+                      child: const Text('Summary'),
+                    ),
+                  ],
+                ),
+            ],
+          ),
         ),
       ),
     );
