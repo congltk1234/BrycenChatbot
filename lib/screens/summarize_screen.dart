@@ -349,6 +349,17 @@ class _SummarizeScreenstate extends ConsumerState<SummarizeScreen> {
                                         file.name.split('.').first;
                                     String fileContent;
                                     switch (file.extension) {
+                                      case 'mp3':
+                                        print('mp3 nek');
+                                        fileContent = await speech2text(
+                                            widget.apiKey, file.path!);
+                                        final myFile = File(
+                                            '/data/user/0/com.example.brycen_chatbot/cache/file_picker/$filename.txt');
+                                        await myFile.writeAsString(fileContent);
+                                        _uploadedFile(
+                                          myFile.path,
+                                        );
+                                        break;
                                       case 'txt':
                                         _uploadedFile(
                                           file.path!,
@@ -375,7 +386,6 @@ class _SummarizeScreenstate extends ConsumerState<SummarizeScreen> {
                                         _uploadedFile(
                                           myFile.path,
                                         );
-
                                         break;
 
                                       default:

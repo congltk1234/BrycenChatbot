@@ -241,11 +241,11 @@ class _TextAndVoiceFieldState extends State<TextAndVoiceField> {
     print('load vector');
     final listVector = MemoryVectorStore(embeddings: embeddings);
     listVector.addVectors(vectors: vectorList, documents: docList);
-    listVector.similaritySearch(query: 'User prompt');
+    listVector.similaritySearch(query: message);
 
     final qaChain = langOpenAI.OpenAIQAWithSourcesChain(llm: llm);
     final docprompt = PromptTemplate.fromTemplate(
-      'Content: {page_content}\nSource: {source}',
+      'Only use these informations. Content: {page_content}\nSource: {source} ',
     );
     final finalQAChain = StuffDocumentsChain(
       llmChain: qaChain,
