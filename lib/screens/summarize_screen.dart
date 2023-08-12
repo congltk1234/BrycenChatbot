@@ -1,6 +1,9 @@
+import 'dart:io';
+
 import 'package:brycen_chatbot/const/prompt.dart';
 import 'package:brycen_chatbot/models/suggestQuestion.dart';
 import 'package:brycen_chatbot/providers/suggest_provider.dart';
+import 'package:brycen_chatbot/services/file_handler.dart';
 import 'package:brycen_chatbot/widget/app_bar.dart';
 import 'package:brycen_chatbot/widget/chat/chat_item.dart';
 import 'package:brycen_chatbot/widget/chat/text_and_voice.dart';
@@ -139,7 +142,7 @@ class _SummarizeScreenstate extends ConsumerState<SummarizeScreen> {
     });
   }
 
-  void _uploadedFile(String path) async {
+  Future<void> _uploadedFile(String path) async {
     setState(() {
       _isLoading = true;
     });
@@ -329,23 +332,49 @@ class _SummarizeScreenstate extends ConsumerState<SummarizeScreen> {
                                   onPressed: () async {
                                     final result =
                                         await FilePicker.platform.pickFiles(
+                                      dialogTitle: "Only Text and Audio file",
                                       type: FileType.custom,
                                       allowedExtensions: [
                                         'txt',
                                         'pdf',
-                                        'doc',
+                                        'docx',
                                         'mp3',
                                         'wav'
                                       ],
                                     );
-
                                     if (result == null) return;
-                                    PlatformFile file = result.files.first;
 
-                                    final path = file.path;
-                                    _uploadedFile(
-                                      path!,
-                                    );
+                                    PlatformFile file = result.files.first;
+                                    String filename =
+                                        file.name.split('.').first;
+                                    String fileContent;
+                                    switch (file.extension) {
+                                      case 'txt':
+                                        _uploadedFile(
+                                          file.path!,
+                                        );
+                                        break;
+                                      case 'docx':
+                                        print('This is docx');
+                                        print(filename);
+                                        fileContent =
+                                            await doc2text(file.path!);
+                                        print(fileContent);
+                                        final myFile = File(
+                                            '/data/user/0/com.example.brycen_chatbot/cache/file_picker/$filename.txt');
+                                        await myFile.writeAsString(fileContent);
+                                        _uploadedFile(
+                                          myFile.path,
+                                        );
+
+                                        break;
+                                      case 'pdf':
+                                        print('This is pdf');
+                                        break;
+
+                                      default:
+                                        print('No valid file');
+                                    }
                                   },
                                 ),
                               ),
@@ -477,7 +506,7 @@ class _SummarizeScreenstate extends ConsumerState<SummarizeScreen> {
                                 Positioned(
                                   bottom: 10,
                                   left: 5,
-                                  child: FloatingActionButton(
+                                  child: FloatingActionButton.small(
                                     child: const Icon(
                                       Icons.file_present_rounded,
                                     ),

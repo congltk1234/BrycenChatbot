@@ -53,6 +53,7 @@ dependencies:
   flutter_riverpod: ^2.3.6
   connection_notifier: ^1.0.1
   open_file: ^3.3.2
+  docx_to_text: ^1.0.1
 
 dev_dependencies:
   flutter_test:
