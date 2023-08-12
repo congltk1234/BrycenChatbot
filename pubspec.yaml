@@ -54,6 +54,7 @@ dependencies:
   connection_notifier: ^1.0.1
   open_file: ^3.3.2
   docx_to_text: ^1.0.1
+  syncfusion_flutter_pdf: ^22.2.8
 
 dev_dependencies:
   flutter_test:

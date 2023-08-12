@@ -356,10 +356,19 @@ class _SummarizeScreenstate extends ConsumerState<SummarizeScreen> {
                                         break;
                                       case 'docx':
                                         print('This is docx');
-                                        print(filename);
                                         fileContent =
                                             await doc2text(file.path!);
-                                        print(fileContent);
+                                        final myFile = File(
+                                            '/data/user/0/com.example.brycen_chatbot/cache/file_picker/$filename.txt');
+                                        await myFile.writeAsString(fileContent);
+                                        _uploadedFile(
+                                          myFile.path,
+                                        );
+                                        break;
+                                      case 'pdf':
+                                        print('This is pdf');
+                                        fileContent =
+                                            await pdf2text(file.path!);
                                         final myFile = File(
                                             '/data/user/0/com.example.brycen_chatbot/cache/file_picker/$filename.txt');
                                         await myFile.writeAsString(fileContent);
@@ -367,9 +376,6 @@ class _SummarizeScreenstate extends ConsumerState<SummarizeScreen> {
                                           myFile.path,
                                         );
 
-                                        break;
-                                      case 'pdf':
-                                        print('This is pdf');
                                         break;
 
                                       default:
