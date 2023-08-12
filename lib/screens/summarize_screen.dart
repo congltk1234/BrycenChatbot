@@ -329,7 +329,7 @@ class _SummarizeScreenstate extends ConsumerState<SummarizeScreen> {
                                     "Upload File",
                                     style: TextStyle(fontSize: 25),
                                   ),
-                                  onPressed: () async {
+                             onPressed: () async {
                                     final result =
                                         await FilePicker.platform.pickFiles(
                                       dialogTitle: "Only Text and Audio file",
@@ -339,7 +339,9 @@ class _SummarizeScreenstate extends ConsumerState<SummarizeScreen> {
                                         'pdf',
                                         'docx',
                                         'mp3',
-                                        'wav'
+                                        'wav',
+                                        'mpga',
+                                        'mpeg'
                                       ],
                                     );
                                     if (result == null) return;
@@ -349,17 +351,6 @@ class _SummarizeScreenstate extends ConsumerState<SummarizeScreen> {
                                         file.name.split('.').first;
                                     String fileContent;
                                     switch (file.extension) {
-                                      case 'mp3':
-                                        print('mp3 nek');
-                                        fileContent = await speech2text(
-                                            widget.apiKey, file.path!);
-                                        final myFile = File(
-                                            '/data/user/0/com.example.brycen_chatbot/cache/file_picker/$filename.txt');
-                                        await myFile.writeAsString(fileContent);
-                                        _uploadedFile(
-                                          myFile.path,
-                                        );
-                                        break;
                                       case 'txt':
                                         _uploadedFile(
                                           file.path!,
@@ -387,7 +378,20 @@ class _SummarizeScreenstate extends ConsumerState<SummarizeScreen> {
                                           myFile.path,
                                         );
                                         break;
-
+                                      case 'mpga':
+                                      case 'mpeg':
+                                      case 'wav':
+                                      case 'mp3':
+                                        print('Audio Process...');
+                                        fileContent = await speech2text(
+                                            widget.apiKey, file.path!);
+                                        final myFile = File(
+                                            '/data/user/0/com.example.brycen_chatbot/cache/file_picker/${filename}_script.txt');
+                                        await myFile.writeAsString(fileContent);
+                                        _uploadedFile(
+                                          myFile.path,
+                                        );
+                                        break;
                                       default:
                                         print('No valid file');
                                     }
