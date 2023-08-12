@@ -12,6 +12,7 @@ import 'package:intl/intl.dart';
 import 'package:langchain/langchain.dart';
 import 'package:langchain_openai/langchain_openai.dart' as langOpenAI;
 import 'package:collection/collection.dart';
+import 'package:open_file/open_file.dart';
 
 class SummarizeScreen extends ConsumerStatefulWidget {
   SummarizeScreen({
@@ -45,6 +46,9 @@ class _SummarizeScreenstate extends ConsumerState<SummarizeScreen> {
   late ScrollController _listScrollController;
   bool _needsScroll = true;
   late FocusNode focusNode;
+
+  var file_path = '';
+  var file_name = '';
 
   @override
   void initState() {
@@ -323,8 +327,17 @@ class _SummarizeScreenstate extends ConsumerState<SummarizeScreen> {
                                     style: TextStyle(fontSize: 25),
                                   ),
                                   onPressed: () async {
-                                    final result = await FilePicker.platform
-                                        .pickFiles(withData: true);
+                                    final result =
+                                        await FilePicker.platform.pickFiles(
+                                      type: FileType.custom,
+                                      allowedExtensions: [
+                                        'txt',
+                                        'pdf',
+                                        'doc',
+                                        'mp3',
+                                        'wav'
+                                      ],
+                                    );
 
                                     if (result == null) return;
                                     PlatformFile file = result.files.first;
@@ -374,79 +387,118 @@ class _SummarizeScreenstate extends ConsumerState<SummarizeScreen> {
                     : Column(
                         children: [
                           Expanded(
-                            child: ListView.builder(
-                                controller: _listScrollController,
-                                itemCount: lengthHistory,
-                                itemBuilder: (context, index) {
-                                  final chatMessage =
-                                      loadedMessages[index].data();
+                            child: Stack(
+                              alignment: AlignmentDirectional.bottomCenter,
+                              children: [
+                                Column(
+                                  children: [
+                                    Expanded(
+                                      child: ListView.builder(
+                                          controller: _listScrollController,
+                                          itemCount: lengthHistory,
+                                          itemBuilder: (context, index) {
+                                            final chatMessage =
+                                                loadedMessages[index].data();
 
-                                  return ChatItem(
-                                    humanMessage: chatMessage["Human"],
-                                    botResponse: chatMessage["AI"],
-                                    tokens: chatMessage["totalTokens"],
-                                    timeStamp: DateFormat.yMMMd()
-                                        .add_jm()
-                                        .format(DateTime.parse(
-                                            chatMessage["createdAt"]
-                                                .toDate()
-                                                .toString())),
-                                    shouldAnimate: false,
-                                  );
-                                }),
-                          ),
-                          ListView.builder(
-                            itemCount: suggestList.length,
-                            shrinkWrap: true,
-                            itemBuilder: (BuildContext context, int index) {
-                              return ActionChip(
-                                padding: const EdgeInsets.symmetric(
-                                    vertical: 5, horizontal: 8),
-                                backgroundColor: Theme.of(context)
-                                    .colorScheme
-                                    .primary
-                                    .withOpacity(0.07),
-                                label: Container(
-                                    constraints: BoxConstraints(
-                                        maxWidth:
-                                            MediaQuery.of(context).size.width *
-                                                0.7),
-                                    child: Text(
-                                      suggestList[index]
-                                          .suggestQuestion!
-                                          .trim(),
-                                      textScaleFactor: 0.85,
-                                      softWrap: true,
-                                      maxLines: 2,
-                                    )),
-                                shape: const StadiumBorder(side: BorderSide()),
-                                onPressed: _suggestLoading
-                                    ? null
-                                    : () async {
-                                        documentQA(suggestList[index]
-                                            .suggestQuestion!);
+                                            return ChatItem(
+                                              humanMessage:
+                                                  chatMessage["Human"],
+                                              botResponse: chatMessage["AI"],
+                                              tokens:
+                                                  chatMessage["totalTokens"],
+                                              timeStamp: DateFormat.yMMMd()
+                                                  .add_jm()
+                                                  .format(DateTime.parse(
+                                                      chatMessage["createdAt"]
+                                                          .toDate()
+                                                          .toString())),
+                                              shouldAnimate: false,
+                                            );
+                                          }),
+                                    ),
+                                    ListView.builder(
+                                      itemCount: suggestList.length,
+                                      shrinkWrap: true,
+                                      itemBuilder:
+                                          (BuildContext context, int index) {
+                                        return ActionChip(
+                                          padding: const EdgeInsets.symmetric(
+                                              vertical: 5, horizontal: 8),
+                                          backgroundColor: Theme.of(context)
+                                              .colorScheme
+                                              .primary
+                                              .withOpacity(0.07),
+                                          label: Container(
+                                              constraints: BoxConstraints(
+                                                  maxWidth:
+                                                      MediaQuery.of(context)
+                                                              .size
+                                                              .width *
+                                                          0.65),
+                                              child: Text(
+                                                suggestList[index]
+                                                    .suggestQuestion!
+                                                    .trim(),
+                                                textScaleFactor: 0.85,
+                                                softWrap: true,
+                                                maxLines: 2,
+                                              )),
+                                          shape: const StadiumBorder(
+                                              side: BorderSide()),
+                                          onPressed: _suggestLoading
+                                              ? null
+                                              : () async {
+                                                  documentQA(suggestList[index]
+                                                      .suggestQuestion!);
 
-                                        await FirebaseFirestore.instance
-                                            .collection("users")
-                                            .doc(widget.uid)
-                                            .collection("summarize")
-                                            .doc(widget.chatTitleID)
-                                            .collection('suggestion')
-                                            .doc(suggestList[index].id)
-                                            .delete()
-                                            .then((value) =>
-                                                print("Suggest Deleted"))
-                                            .catchError((error) => print(
-                                                "Failed to delete: $error"));
-                                        setState(() {
-                                          suggestList.removeAt(index);
-                                        });
+                                                  await FirebaseFirestore
+                                                      .instance
+                                                      .collection("users")
+                                                      .doc(widget.uid)
+                                                      .collection("summarize")
+                                                      .doc(widget.chatTitleID)
+                                                      .collection('suggestion')
+                                                      .doc(
+                                                          suggestList[index].id)
+                                                      .delete()
+                                                      .then((value) => print(
+                                                          "Suggest Deleted"))
+                                                      .catchError((error) => print(
+                                                          "Failed to delete: $error"));
+                                                  setState(() {
+                                                    suggestList.removeAt(index);
+                                                  });
+                                                },
+                                        );
                                       },
-                              );
-                            },
+                                    ),
+                                  ],
+                                ),
+                                Positioned(
+                                  bottom: 10,
+                                  left: 5,
+                                  child: FloatingActionButton(
+                                    child: const Icon(
+                                      Icons.file_present_rounded,
+                                    ),
+                                    onPressed: () async {
+                                      final fileData = await FirebaseFirestore
+                                          .instance
+                                          .collection("users")
+                                          .doc(widget.uid)
+                                          .collection('summarize')
+                                          .doc(widget.chatTitleID)
+                                          .get();
+                                      OpenFile.open(
+                                          fileData.data()!['FilePath']);
+                                    },
+                                  ),
+                                ),
+                              ],
+                            ),
                           ),
                           Padding(
-                            padding: const EdgeInsets.all(10.0),
+                            padding: const EdgeInsets.all(8.0),
                             child: TextAndVoiceField(
                               uid: widget.uid,
                               userName: widget.userName,
@@ -456,7 +508,6 @@ class _SummarizeScreenstate extends ConsumerState<SummarizeScreen> {
                               chatID: widget.chatTitleID,
                             ),
                           ),
-                          const SizedBox(height: 8),
                         ],
                       ),
               );

@@ -17,8 +17,6 @@ class SuggestNotifier extends StateNotifier<List<SuggestModel>> {
     List<SuggestModel> suggestList = [];
     print('Load suggest');
     for (var element in getList.docs) {
-      // final option = Text(element.data()['Username']);
-      print(element.data()['suggestQuestion']);
       suggestList.add(SuggestModel(
         id: element.id,
         suggestQuestion: element.data()['suggestQuestion'],

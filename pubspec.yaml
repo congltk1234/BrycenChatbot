@@ -52,6 +52,7 @@ dependencies:
   file_picker: ^5.3.3
   flutter_riverpod: ^2.3.6
   connection_notifier: ^1.0.1
+  open_file: ^3.3.2
 
 dev_dependencies:
   flutter_test:
