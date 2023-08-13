@@ -1,4 +1,4 @@
-import 'package:brycen_chatbot/models/suggestQuestion.dart';
+import '../models/suggestQuestion.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 

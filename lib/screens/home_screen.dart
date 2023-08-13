@@ -1,10 +1,10 @@
 import 'dart:io';
 
-import 'package:brycen_chatbot/models/chatTitle.dart';
-import 'package:brycen_chatbot/providers/menu_provider.dart';
-import 'package:brycen_chatbot/screens/chat_screen.dart';
-import 'package:brycen_chatbot/screens/summarize_screen.dart';
-import 'package:brycen_chatbot/values/share_keys.dart';
+import '../models/chatTitle.dart';
+import '../providers/menu_provider.dart';
+import 'chat_screen.dart';
+import 'summarize_screen.dart';
+import '../values/share_keys.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:connection_notifier/connection_notifier.dart';
 import 'package:flutter/material.dart';
@@ -416,18 +416,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                         ref
                             .read(chatTitleProvider.notifier)
                             .fetchDatafromFireStore(_initUID);
-                        ref
-                            .read(summaryProvider.notifier)
-                            .fetchDatafromFireStore(_initUID);
                         scaffoldKey.currentState!.openDrawer();
                       },
                       child: const Text('Chatbot'),
                     ),
                     ElevatedButton(
                       onPressed: () {
-                        ref
-                            .read(chatTitleProvider.notifier)
-                            .fetchDatafromFireStore(_initUID);
                         ref
                             .read(summaryProvider.notifier)
                             .fetchDatafromFireStore(_initUID);
@@ -446,15 +440,13 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
   Drawer DrawerMenu(
       BuildContext context, List<ChatTitleModel> widgetOptions, bool mode) {
-    // mode
-    //     ? ref.read(chatTitleProvider.notifier).fetchDatafromFireStore(_initUID)
-    //     : ref.read(summaryProvider.notifier).fetchDatafromFireStore(_initUID);
     return Drawer(
       child: SafeArea(
         child: Column(
           children: [
             ListTile(
-              tileColor: Theme.of(context).colorScheme.primary.withOpacity(0.6),
+              tileColor:
+                  Theme.of(context).colorScheme.primary.withOpacity(0.78),
               textColor: Colors.white,
               iconColor: Colors.white,
               leading: const Icon(Icons.add),
@@ -642,7 +634,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                       //   color: Colors.black26,
                       //   size: 15,
                       // ),
-                      shape: RoundedRectangleBorder(
+                      shape: const RoundedRectangleBorder(
                         side: BorderSide(color: Colors.black, width: 0.1),
                       ),
                       leading: Icon(

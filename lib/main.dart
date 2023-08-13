@@ -1,6 +1,6 @@
-import 'package:brycen_chatbot/const/theme.dart';
-import 'package:brycen_chatbot/firebase_options.dart';
-import 'package:brycen_chatbot/screens/home_screen.dart';
+import 'const/theme.dart';
+import 'firebase_options.dart';
+import 'screens/home_screen.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';

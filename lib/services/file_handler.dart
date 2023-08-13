@@ -37,3 +37,21 @@ Future<String> speech2text(
   final responseData = json.decode(newresponse.body);
   return responseData['text'];
 }
+
+// Future uploadFile(List<int> asset, String name) async {
+
+//   StorageReference reference = FirebaseStorage.instance.ref().child(name);
+//   StorageUploadTask uploadTask = reference.putData(asset);
+//   String url = await (await uploadTask.onComplete).ref.getDownloadURL();
+//   print(url);
+//   documentFileUpload(url);
+//   return  url;
+// }
+
+// upload(File fil) async {
+//   String fileName = fil.path.split('/').last;
+//   StorageReference;
+//   StorageUploadTask uploadTask = firebaseStorageRef.putFile(fil);
+//   StorageTaskSnapshot taskSnapshot = await uploadTask.onComplete;
+//   taskSnapshot.ref.getDownloadURL().then((value) {});
+// }

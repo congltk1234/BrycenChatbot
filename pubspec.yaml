@@ -40,7 +40,6 @@ dependencies:
   langchain: ^0.0.1
   cloud_firestore: ^4.8.4
   firebase_core: ^2.15.0
-  # flutter_riverpod: ^2.3.6
   speech_to_text: ^6.3.0
   flutter_tts: ^3.7.0
   dart_openai: ^4.0.0
@@ -55,6 +54,7 @@ dependencies:
   open_file: ^3.3.2
   docx_to_text: ^1.0.1
   syncfusion_flutter_pdf: ^22.2.8
+  firebase_storage: ^11.2.5
 
 dev_dependencies:
   flutter_test:

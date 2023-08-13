@@ -1,6 +1,6 @@
-import 'package:brycen_chatbot/widget/app_bar.dart';
-import 'package:brycen_chatbot/widget/chat/chat_item.dart';
-import 'package:brycen_chatbot/widget/chat/text_and_voice.dart';
+import '../widget/app_bar.dart';
+import '../widget/chat/chat_item.dart';
+import '../widget/chat/text_and_voice.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';

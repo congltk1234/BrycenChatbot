@@ -1,9 +1,9 @@
-import 'package:brycen_chatbot/const/prompt.dart';
+import '../../const/prompt.dart';
+import '../../services/voice_handle.dart';
+import 'toggle_button.dart';
 import 'package:flutter/material.dart';
 import 'package:dart_openai/dart_openai.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:brycen_chatbot/services/voice_handle.dart';
-import 'package:brycen_chatbot/widget/chat/toggle_button.dart';
 import 'package:langchain/langchain.dart';
 import 'package:langchain_openai/langchain_openai.dart' as langOpenAI;
 
@@ -67,6 +67,7 @@ class _TextAndVoiceFieldState extends State<TextAndVoiceField> {
       children: [
         Expanded(
           child: TextField(
+            style: const TextStyle(fontSize: 18),
             focusNode: focusNode,
             controller: _messageController,
             onChanged: (value) {
@@ -75,6 +76,12 @@ class _TextAndVoiceFieldState extends State<TextAndVoiceField> {
                   : setInputMode(InputMode.voice);
             },
             decoration: InputDecoration(
+              hintText: 'Ask me anything...',
+              filled: true,
+              fillColor: Theme.of(context)
+                  .colorScheme
+                  .secondaryContainer
+                  .withOpacity(0.4),
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12),
               ),

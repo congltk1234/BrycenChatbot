@@ -1,12 +1,12 @@
 import 'dart:io';
 
-import 'package:brycen_chatbot/const/prompt.dart';
-import 'package:brycen_chatbot/models/suggestQuestion.dart';
-import 'package:brycen_chatbot/providers/suggest_provider.dart';
-import 'package:brycen_chatbot/services/file_handler.dart';
-import 'package:brycen_chatbot/widget/app_bar.dart';
-import 'package:brycen_chatbot/widget/chat/chat_item.dart';
-import 'package:brycen_chatbot/widget/chat/text_and_voice.dart';
+import '../const/prompt.dart';
+import '../models/suggestQuestion.dart';
+import '../providers/suggest_provider.dart';
+import '../services/file_handler.dart';
+import '../widget/app_bar.dart';
+import '../widget/chat/chat_item.dart';
+import '../widget/chat/text_and_voice.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
@@ -184,7 +184,9 @@ class _SummarizeScreenstate extends ConsumerState<SummarizeScreen> {
     print('Uploaded Embeddings to FireStore');
     // listVector.
     final llm = langOpenAI.ChatOpenAI(
-        temperature: 0, apiKey: widget.apiKey, model: 'gpt-3.5-turbo-16k-0613');
+        temperature: 0.1,
+        apiKey: widget.apiKey,
+        model: 'gpt-3.5-turbo-16k-0613');
     //// summarize
     final docPrompt = PromptTemplate.fromTemplate(summarize_template);
     final summarizeChain = SummarizeChain.stuff(
@@ -329,7 +331,7 @@ class _SummarizeScreenstate extends ConsumerState<SummarizeScreen> {
                                     "Upload File",
                                     style: TextStyle(fontSize: 25),
                                   ),
-                             onPressed: () async {
+                                  onPressed: () async {
                                     final result =
                                         await FilePicker.platform.pickFiles(
                                       dialogTitle: "Only Text and Audio file",
@@ -357,7 +359,6 @@ class _SummarizeScreenstate extends ConsumerState<SummarizeScreen> {
                                         );
                                         break;
                                       case 'docx':
-                                        print('This is docx');
                                         fileContent =
                                             await doc2text(file.path!);
                                         final myFile = File(
@@ -368,7 +369,6 @@ class _SummarizeScreenstate extends ConsumerState<SummarizeScreen> {
                                         );
                                         break;
                                       case 'pdf':
-                                        print('This is pdf');
                                         fileContent =
                                             await pdf2text(file.path!);
                                         final myFile = File(
