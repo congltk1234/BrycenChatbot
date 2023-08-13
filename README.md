@@ -32,15 +32,15 @@ A brief description of what this project does and who it's for
 #### Init Firebase
 - Create new project:
 
-![Flutter](https://i0.wp.com/www.printmag.com/wp-content/uploads/2021/02/4cbe8d_f1ed2800a49649848102c68fc5a66e53mv2.gif)
+![Init Firebase project](https://raw.githubusercontent.com/congltk1234/BrycenChatbot/main/docs/assets/gif/1_initProject.gif)
 
 - Set Up FireStore Database for store app data:
 
-![Flutter](https://i0.wp.com/www.printmag.com/wp-content/uploads/2021/02/4cbe8d_f1ed2800a49649848102c68fc5a66e53mv2.gif)
+![FirestoreDatabase](https://raw.githubusercontent.com/congltk1234/BrycenChatbot/main/docs/assets/gif/2_FirestoreDatabase.gif)
 
 - Set Up Firebase Storage for store files:
 
-![Flutter](https://i0.wp.com/www.printmag.com/wp-content/uploads/2021/02/4cbe8d_f1ed2800a49649848102c68fc5a66e53mv2.gif)
+![FirebaseStorage](https://raw.githubusercontent.com/congltk1234/BrycenChatbot/main/docs/assets/gif/3_firebaseStorage.gif)
 
 #### Login with Firebase CLI
 Install [Firebase CLI](https://firebase.google.com/docs/cli#setup_update_cli) via npm by running the following command:
@@ -49,10 +49,12 @@ Install [Firebase CLI](https://firebase.google.com/docs/cli#setup_update_cli) vi
 ```
 
 Then login your google account
+
 ```bash
   firebase login
 ```
-![firebaseLogin](https://i0.wp.com/www.printmag.com/wp-content/uploads/2021/02/4cbe8d_f1ed2800a49649848102c68fc5a66e53mv2.gif)
+
+![FirebaseStorage](https://raw.githubusercontent.com/congltk1234/BrycenChatbot/main/docs/assets/gif/4_firebaseLogin.gif)
 
 #### Install FlutterFire CLI 
 Running the following command from any directory:
@@ -80,7 +82,7 @@ Running the following command from any directory:
 ![firebaseLogin](https://i0.wp.com/www.printmag.com/wp-content/uploads/2021/02/4cbe8d_f1ed2800a49649848102c68fc5a66e53mv2.gif)
 
 
-<details open>
+<details>
 <summary>Build file APK</summary>
 <br>
 This is how you dropdown.
@@ -105,51 +107,6 @@ Follow these steps to install the APK on a connected Android device. From the co
 ## Authors
 
 - [@octokatherine](https://www.github.com/octokatherine)
-
-
-## Roadmap
-
-- Additional browser support
-
-- Add more integrations
-
-
-## License
-
-[MIT](https://choosealicense.com/licenses/mit/)
-
-
-## API Reference
-
-#### Get all items
-
-```http
-  GET /api/items
-```
-
-| Parameter | Type     | Description                |
-| :-------- | :------- | :------------------------- |
-| `api_key` | `string` | **Required**. Your API key |
-
-#### Get item
-
-```http
-  GET /api/items/${id}
-```
-
-| Parameter | Type     | Description                       |
-| :-------- | :------- | :-------------------------------- |
-| `id`      | `string` | **Required**. Id of item to fetch |
-
-#### add(num1, num2)
-
-Takes two numbers and returns the sum.
-
-
-## Appendix
-
-Any additional information goes here
-
 
 ## Badges
 
