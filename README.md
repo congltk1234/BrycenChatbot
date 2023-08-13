@@ -4,6 +4,23 @@
 A brief description of what this project does and who it's for
 
 
+## Features
+
+- Light/dark mode toggle
+- Live previews
+- Fullscreen mode
+- Cross platform
+
+| Home|Chat|Summarize|
+|--|--|--|
+| ![Home UI](https://raw.githubusercontent.com/22T1020362/Chatbot-Summary-ntq/master/screenshots/screenshot1.png) | ![Chat UI](https://raw.githubusercontent.com/22T1020362/Chatbot-Summary-ntq/master/screenshots/screenshot1.png) | ![Summarize UI](https://raw.githubusercontent.com/22T1020362/Chatbot-Summary-ntq/master/screenshots/screenshot1.png) |
+
+
+| Home|Chat|Summarize|
+|--|--|--|
+| ![Home UI](https://raw.githubusercontent.com/22T1020362/Chatbot-Summary-ntq/master/screenshots/screenshot1.png) | ![Chat UI](https://raw.githubusercontent.com/22T1020362/Chatbot-Summary-ntq/master/screenshots/screenshot1.png) | ![Summarize UI](https://raw.githubusercontent.com/22T1020362/Chatbot-Summary-ntq/master/screenshots/screenshot1.png) |
+
+
 ## Prerequisites
 
 **Installed:** [npm](https://nodejs.org/en), [Flutter](https://docs.flutter.dev/get-started/install), 
@@ -14,10 +31,15 @@ A brief description of what this project does and who it's for
 ### 1. Settup Firebase for Flutter app
 #### Init Firebase
 - Create new project:
+
 ![Flutter](https://i0.wp.com/www.printmag.com/wp-content/uploads/2021/02/4cbe8d_f1ed2800a49649848102c68fc5a66e53mv2.gif)
+
 - Set Up FireStore Database for store app data:
+
 ![Flutter](https://i0.wp.com/www.printmag.com/wp-content/uploads/2021/02/4cbe8d_f1ed2800a49649848102c68fc5a66e53mv2.gif)
+
 - Set Up Firebase Storage for store files:
+
 ![Flutter](https://i0.wp.com/www.printmag.com/wp-content/uploads/2021/02/4cbe8d_f1ed2800a49649848102c68fc5a66e53mv2.gif)
 
 #### Login with Firebase CLI
@@ -62,34 +84,78 @@ Running the following command from any directory:
 <summary>Build file APK</summary>
 <br>
 This is how you dropdown.
-<br><br>
-<pre>
-&lt;details&gt;
-&lt;summary&gt;How do I dropdown?&lt;&#47;summary&gt;
-&lt;br&gt;
-This is how you dropdown.
-&lt;&#47;details&gt;
+
 
 ```bash
   flutter build apk
 ```
-</pre>
+
 </details>
 
 <details>
 <summary>Install APK on a device</summary>
 <br>
 Follow these steps to install the APK on a connected Android device. From the command line connect your Android device to your computer with a USB cable.
-<br><br>
-<pre>
-&lt;details&gt;
-&lt;summary&gt;How do I dropdown?&lt;&#47;summary&gt;
-&lt;br&gt;
-This is how you dropdown.
-&lt;&#47;details&gt;
 
 ```bash
   flutter install
 ```
-</pre>
 </details>
+
+## Authors
+
+- [@octokatherine](https://www.github.com/octokatherine)
+
+
+## Roadmap
+
+- Additional browser support
+
+- Add more integrations
+
+
+## License
+
+[MIT](https://choosealicense.com/licenses/mit/)
+
+
+## API Reference
+
+#### Get all items
+
+```http
+  GET /api/items
+```
+
+| Parameter | Type     | Description                |
+| :-------- | :------- | :------------------------- |
+| `api_key` | `string` | **Required**. Your API key |
+
+#### Get item
+
+```http
+  GET /api/items/${id}
+```
+
+| Parameter | Type     | Description                       |
+| :-------- | :------- | :-------------------------------- |
+| `id`      | `string` | **Required**. Id of item to fetch |
+
+#### add(num1, num2)
+
+Takes two numbers and returns the sum.
+
+
+## Appendix
+
+Any additional information goes here
+
+
+## Badges
+
+Add badges from somewhere like: [shields.io](https://shields.io/)
+
+[![MIT License](https://img.shields.io/badge/License-MIT-green.svg)](https://choosealicense.com/licenses/mit/)
+[![GPLv3 License](https://img.shields.io/badge/License-GPL%20v3-yellow.svg)](https://opensource.org/licenses/)
+[![AGPL License](https://img.shields.io/badge/license-AGPL-blue.svg)](http://www.gnu.org/licenses/agpl-3.0)
+
