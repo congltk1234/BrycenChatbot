@@ -12,7 +12,7 @@
     </queries>
     
     <application
-        android:label="brycen_chatbot"
+        android:label="Brycen Chatbot"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
         <activity
