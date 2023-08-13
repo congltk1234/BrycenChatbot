@@ -1,7 +1,5 @@
+// ignore_for_file: avoid_print, use_build_context_synchronously, non_constant_identifier_names
 import 'dart:io';
-
-import '../services/file_handler.dart';
-
 import '../models/chatTitle.dart';
 import '../providers/menu_provider.dart';
 import 'chat_screen.dart';
@@ -26,7 +24,6 @@ class HomeScreen extends ConsumerStatefulWidget {
 }
 
 class _HomeScreenState extends ConsumerState<HomeScreen> {
-  // controllers for form text controllers
   late ChatTitleModel currentTitle;
   final _formKey = GlobalKey<FormState>();
   final TextEditingController _enteredAPIKey = TextEditingController();
@@ -47,6 +44,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
   @override
   void initState() {
+    setState(() {
+      _isLoading = true;
+    });
     checkInternet();
     _getLocalValue();
     super.initState();
@@ -66,7 +66,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         "temperature": 0,
       }),
     );
-    // ignore: use_build_context_synchronously
     ScaffoldMessenger.of(context).clearSnackBars();
 
     final message = jsonDecode(response.body);
@@ -75,7 +74,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       print(message['choices'][0]['text']);
       return true;
     } else {
-      // ignore: use_build_context_synchronously
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           backgroundColor: Theme.of(context).colorScheme.error,
@@ -92,7 +90,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       await prefs.setString(ShareKeys.APIkey, _enteredAPIKey.text);
       await prefs.setString(ShareKeys.Username, _enteredUsername.text);
       print('Accept');
-      // ignore: use_build_context_synchronously
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           backgroundColor: Colors.green,
@@ -164,7 +161,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
         backgroundColor: Theme.of(context).colorScheme.error,
-        content: Text('not connected'),
+        content: const Text('not connected'),
       ));
     }
   }
@@ -184,9 +181,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       ref.read(chatTitleProvider.notifier).fetchDatafromFireStore(_initUID);
       ref.read(summaryProvider.notifier).fetchDatafromFireStore(_initUID);
     });
-    final key_status = await checkApiKey(_initAPIKey);
+    final keyStatus = await checkApiKey(_initAPIKey);
     setState(() {
-      _isExpired = !key_status;
+      _isExpired = !keyStatus;
+      _isLoading = false;
     });
   }
 
@@ -224,7 +222,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 prefixIcon: Icon(Icons.account_circle,
                     color: Theme.of(context).colorScheme.secondary),
                 suffixIcon: IconButton(
-                  icon: Icon(Icons.clear),
+                  icon: const Icon(Icons.clear),
                   onPressed: _enteredUsername.clear,
                 ),
               ),
@@ -248,7 +246,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     .withOpacity(0.4),
                 labelText: 'API Key',
                 prefixIcon: IconButton(
-                  padding: EdgeInsets.all(0),
+                  padding: const EdgeInsets.all(0),
                   icon: Icon(
                       passwordVisible ? Icons.visibility : Icons.visibility_off,
                       size: 20,
@@ -272,7 +270,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   mainAxisSize: MainAxisSize.min, // added line
                   children: [
                     IconButton(
-                      padding: EdgeInsets.all(0),
+                      padding: const EdgeInsets.all(0),
                       icon: const Icon(Icons.clear),
                       onPressed: _enteredAPIKey.clear,
                     ),
@@ -399,23 +397,24 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           if (connected == null) return;
         },
         disconnected: Center(
-            key: UniqueKey(),
-            child: TextButton(
-              onPressed: () {},
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Image.asset('assets/images/logoBrycen.png'),
-                  const Text(
-                    'Please check your internet connection',
-                    style: TextStyle(
-                      color: Colors.red,
-                      fontSize: 20,
-                    ),
+          key: UniqueKey(),
+          child: TextButton(
+            onPressed: () {},
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Image.asset('assets/images/logoBrycen.png'),
+                const Text(
+                  'Please check your internet connection',
+                  style: TextStyle(
+                    color: Colors.red,
+                    fontSize: 20,
                   ),
-                ],
-              ),
-            )),
+                ),
+              ],
+            ),
+          ),
+        ),
         connected: Container(
           width: double.infinity,
           height: double.infinity,
@@ -434,21 +433,25 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                     children: [
                       ElevatedButton(
-                        onPressed: () {
-                          ref
-                              .read(chatTitleProvider.notifier)
-                              .fetchDatafromFireStore(_initUID);
-                          scaffoldKey.currentState!.openDrawer();
-                        },
+                        onPressed: !_isLoading
+                            ? () {
+                                ref
+                                    .read(chatTitleProvider.notifier)
+                                    .fetchDatafromFireStore(_initUID);
+                                scaffoldKey.currentState!.openDrawer();
+                              }
+                            : null,
                         child: const Text('Chatbot'),
                       ),
                       ElevatedButton(
-                        onPressed: () {
-                          ref
-                              .read(summaryProvider.notifier)
-                              .fetchDatafromFireStore(_initUID);
-                          scaffoldKey.currentState!.openEndDrawer();
-                        },
+                        onPressed: !_isLoading
+                            ? () {
+                                ref
+                                    .read(summaryProvider.notifier)
+                                    .fetchDatafromFireStore(_initUID);
+                                scaffoldKey.currentState!.openEndDrawer();
+                              }
+                            : null,
                         child: const Text('Summary'),
                       ),
                     ],
@@ -557,8 +560,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                       color: Colors.red,
                     ),
                     onDismissed: (DismissDirection direction) {
-                      bool _isCancel = true;
-
                       showDialog(
                         context: context,
                         builder: (ctx) => AlertDialog(
@@ -579,14 +580,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                                 final instance = FirebaseFirestore.instance;
                                 final batch = instance.batch();
                                 Navigator.pop(ctx);
-                                // ScaffoldMessenger.of(context).showSnackBar(
-                                //   SnackBar(
-                                //     backgroundColor:
-                                //         Theme.of(context).colorScheme.secondary,
-                                //     content: const Text(
-                                //         'Deleting this conversation...'),
-                                //   ),
-                                // );
                                 var document = instance
                                     .collection("users")
                                     .doc(_initUID)
@@ -632,7 +625,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                                         print("Failed to delete: $error"));
                                 setState(() {
                                   widgetOptions.removeAt(index);
-                                  _isCancel = false;
                                 });
                               },
                               child: const Text('Okay'),
@@ -715,7 +707,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 mode
                     ? scaffoldKey.currentState!.openEndDrawer()
                     : scaffoldKey.currentState!.openDrawer();
-                // Navigator.of(context).pop();
               },
             ),
             ListTile(
@@ -730,8 +721,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             ListTile(
               tileColor:
                   Theme.of(context).colorScheme.secondary.withOpacity(0.15),
-              leading: Icon(Icons.settings),
-              title: Text('Setting'),
+              leading: const Icon(Icons.settings),
+              title: const Text('Setting'),
               onTap: () {},
             )
           ],

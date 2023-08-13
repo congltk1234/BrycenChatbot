@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 var kColorScheme =
-    ColorScheme.fromSeed(seedColor: Color.fromARGB(255, 0, 205, 14));
+    ColorScheme.fromSeed(seedColor: const Color.fromARGB(255, 0, 205, 14));
 
 final configThemes = ThemeData().copyWith(
     useMaterial3: true,

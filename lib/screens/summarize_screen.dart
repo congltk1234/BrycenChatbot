@@ -1,3 +1,5 @@
+// ignore_for_file: avoid_print
+
 import 'dart:io';
 
 import '../const/prompt.dart';
@@ -17,6 +19,7 @@ import 'package:langchain_openai/langchain_openai.dart' as langOpenAI;
 import 'package:collection/collection.dart';
 import 'package:open_file/open_file.dart';
 
+// ignore: must_be_immutable
 class SummarizeScreen extends ConsumerStatefulWidget {
   SummarizeScreen({
     super.key,
@@ -47,11 +50,8 @@ class _SummarizeScreenstate extends ConsumerState<SummarizeScreen> {
   var _isLoading = false;
   var _suggestLoading = false;
   late ScrollController _listScrollController;
-  bool _needsScroll = true;
+  final bool _needsScroll = true;
   late FocusNode focusNode;
-
-  var file_path = '';
-  var file_name = '';
 
   @override
   void initState() {
@@ -193,7 +193,7 @@ class _SummarizeScreenstate extends ConsumerState<SummarizeScreen> {
     }
     // listVector.
     final llm = langOpenAI.ChatOpenAI(
-        temperature: 0.1,
+        temperature: 0.2,
         apiKey: widget.apiKey,
         model: 'gpt-3.5-turbo-16k-0613');
     //// summarize

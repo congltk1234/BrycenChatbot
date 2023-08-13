@@ -1,5 +1,6 @@
+// ignore_for_file: constant_identifier_names
 class ShareKeys {
-  static final UID = 'UID';
-  static final APIkey = 'APIkey';
-  static final Username = 'Username';
+  static const UID = 'UID';
+  static const APIkey = 'APIkey';
+  static const Username = 'Username';
 }

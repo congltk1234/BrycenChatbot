@@ -1,3 +1,5 @@
+// ignore_for_file: avoid_print
+
 import '../../const/prompt.dart';
 import '../../services/voice_handle.dart';
 import 'toggle_button.dart';
@@ -18,9 +20,9 @@ class TextAndVoiceField extends StatefulWidget {
   final String _initUsername;
   final String _memory;
   final String _taskMode;
-  // final List<dynamic> _memory;
-  String _chatID;
-  TextAndVoiceField({
+  final String _chatID;
+
+  const TextAndVoiceField({
     super.key,
     required String uid,
     required String apiKey,
@@ -28,7 +30,6 @@ class TextAndVoiceField extends StatefulWidget {
     required String memory,
     required String taskMode,
     required String chatID,
-    // required List<dynamic> memory,
   })  : _initUID = uid,
         _initAPIKey = apiKey,
         _initUsername = userName,
@@ -97,12 +98,13 @@ class _TextAndVoiceFieldState extends State<TextAndVoiceField> {
             _messageController.clear();
             focusNode.unfocus();
 
-            /// Switch Case
-            if (widget._taskMode == 'chat') {
-              sendTextMessage(message);
-            }
-            if (widget._taskMode == 'summarize') {
-              documentQA(message);
+            switch (widget._taskMode) {
+              case 'chat':
+                sendTextMessage(message);
+                break;
+              case 'summarize':
+                documentQA(message);
+              default:
             }
 
             setState(() {
@@ -144,7 +146,6 @@ class _TextAndVoiceFieldState extends State<TextAndVoiceField> {
   }
 
   // void check
-
   void sendTextMessage(String message) async {
     setReplyingState(true);
     final prompt = chat_prompt(widget._initUsername, widget._memory, message);

@@ -1,3 +1,5 @@
+// ignore_for_file: avoid_print
+
 import '../widget/app_bar.dart';
 import '../widget/chat/chat_item.dart';
 import '../widget/chat/text_and_voice.dart';
@@ -5,6 +7,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
+// ignore: must_be_immutable
 class ChatScreen extends StatefulWidget {
   ChatScreen({
     super.key,
@@ -14,7 +17,6 @@ class ChatScreen extends StatefulWidget {
     required this.apiKey,
     required this.userName,
   });
-  // static const id = 'chat_screen';
   String chatTitleID;
   String chatTitle;
   String uid;
@@ -27,12 +29,13 @@ class ChatScreen extends StatefulWidget {
 }
 
 class _ChatScreenState extends State<ChatScreen> {
+  // ignore: non_constant_identifier_names
   int k_memory = 3;
   var _memoryBuffer = '';
   late List<dynamic> memory;
 
   late ScrollController _listScrollController;
-  bool _needsScroll = true;
+  final bool _needsScroll = true;
   late FocusNode focusNode;
 
   @override
