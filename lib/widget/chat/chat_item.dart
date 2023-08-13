@@ -4,7 +4,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_tts/flutter_tts.dart';
 
 // ignore: must_be_immutable
-class ChatItem extends StatelessWidget {
+class ChatItem extends StatefulWidget {
   ChatItem({
     super.key,
     required this.humanMessage,
@@ -19,14 +19,24 @@ class ChatItem extends StatelessWidget {
   final bool shouldAnimate;
   final int tokens;
 
+  @override
+  State<ChatItem> createState() => _ChatItemState();
+}
+
+class _ChatItemState extends State<ChatItem> {
   FlutterTts flutterT2S = FlutterTts();
+
   bool _isSpeaking = false;
 
   void _speak() async {
     // https://www.youtube.com/watch?v=wDWoD1AaLu8
-    _isSpeaking = !_isSpeaking;
+
+    setState(() {
+      _isSpeaking = !_isSpeaking;
+    });
+
     if (_isSpeaking) {
-      await flutterT2S.speak(botResponse);
+      await flutterT2S.speak(widget.botResponse);
     } else {
       flutterT2S.stop();
     }
@@ -43,13 +53,13 @@ class ChatItem extends StatelessWidget {
         children: [
           /// TimeStamp
           Text(
-            timeStamp,
+            widget.timeStamp,
             style: TextStyle(color: Theme.of(context).colorScheme.secondary),
           ),
 
           /// User Message
-          if (humanMessage != '') const SizedBox(height: 5),
-          if (humanMessage != '')
+          if (widget.humanMessage != '') const SizedBox(height: 5),
+          if (widget.humanMessage != '')
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               crossAxisAlignment: CrossAxisAlignment.end,
@@ -58,9 +68,9 @@ class ChatItem extends StatelessWidget {
                   // mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     const SizedBox(width: 45),
-                    if (tokens > 0)
+                    if (widget.tokens > 0)
                       Text(
-                        'Used Tokens: ${tokens.toString()}',
+                        'Used Tokens: ${widget.tokens.toString()}',
                         style: const TextStyle(fontStyle: FontStyle.italic),
                       ),
                   ],
@@ -79,7 +89,7 @@ class ChatItem extends StatelessWidget {
                         bottomRight: Radius.circular(0),
                       )),
                   child: Text(
-                    humanMessage,
+                    widget.humanMessage,
                     style: TextStyle(
                       color: Theme.of(context).colorScheme.onSecondary,
                     ),
@@ -108,36 +118,38 @@ class ChatItem extends StatelessWidget {
                       bottomLeft: Radius.circular(0),
                       bottomRight: Radius.circular(15),
                     )),
-                child: shouldAnimate
+                child: widget.shouldAnimate
                     ? AnimatedTextKit(
                         isRepeatingAnimation: false,
                         repeatForever: false,
                         displayFullTextOnTap: true,
                         totalRepeatCount: 1,
                         animatedTexts: [
-                          TyperAnimatedText(botResponse.trim(),
+                          TyperAnimatedText(widget.botResponse.trim(),
                               textStyle: const TextStyle(
                                   // color: Colors.black,
                                   )),
                         ],
                       )
                     : Text(
-                        botResponse.trim(),
+                        widget.botResponse.trim(),
                         style: const TextStyle(
                           color: Colors.black,
                         ),
                       ),
               ),
-              if (botResponse.length > 40)
+              if (widget.botResponse.length > 40)
                 Column(
                   children: [
                     IconButton(
-                      onPressed: _speak,
-                      icon: Icon(
-                          _isSpeaking ? Icons.volume_mute : Icons.volume_up),
-                      iconSize: 20,
-                      color: Theme.of(context).colorScheme.secondary,
-                    ),
+                        onPressed: _speak,
+                        icon: Icon(
+                          _isSpeaking ? Icons.pause : Icons.volume_up,
+                        ),
+                        iconSize: 20,
+                        color: _isSpeaking
+                            ? Theme.of(context).colorScheme.error
+                            : Theme.of(context).colorScheme.primary),
                     GestureDetector(
                       child: Icon(
                         Icons.copy,
@@ -145,7 +157,8 @@ class ChatItem extends StatelessWidget {
                         color: Theme.of(context).colorScheme.secondary,
                       ),
                       onTap: () {
-                        Clipboard.setData(ClipboardData(text: botResponse));
+                        Clipboard.setData(
+                            ClipboardData(text: widget.botResponse));
                         ScaffoldMessenger.of(context)
                             .showSnackBar(const SnackBar(
                           content: Text('copied'),
@@ -156,22 +169,24 @@ class ChatItem extends StatelessWidget {
                     ),
                   ],
                 ),
-              if (botResponse.length < 40)
+              if (widget.botResponse.length < 40)
                 Row(
                   children: [
                     IconButton(
-                      onPressed: _speak,
-                      iconSize: 20,
-                      icon: Icon(
-                          _isSpeaking ? Icons.volume_mute : Icons.volume_up),
-                    ),
+                        onPressed: _speak,
+                        iconSize: 20,
+                        icon: Icon(_isSpeaking ? Icons.pause : Icons.volume_up),
+                        color: _isSpeaking
+                            ? Theme.of(context).colorScheme.error
+                            : Theme.of(context).colorScheme.primary),
                     GestureDetector(
                       child: const Icon(
                         Icons.copy,
                         size: 20,
                       ),
                       onTap: () {
-                        Clipboard.setData(ClipboardData(text: botResponse));
+                        Clipboard.setData(
+                            ClipboardData(text: widget.botResponse));
                         ScaffoldMessenger.of(context)
                             .showSnackBar(const SnackBar(
                           content: Text('copied'),

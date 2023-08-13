@@ -147,11 +147,7 @@ class _TextAndVoiceFieldState extends State<TextAndVoiceField> {
 
   void sendTextMessage(String message) async {
     setReplyingState(true);
-// prompt
     final prompt = chat_prompt(widget._initUsername, widget._memory, message);
-    print('send msg');
-
-    /// Bot Response Chat GPT here
     OpenAI.apiKey = widget._initAPIKey;
     final OpenAIChatCompletionModel chatCompletion =
         await OpenAI.instance.chat.create(

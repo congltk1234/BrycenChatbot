@@ -1,6 +1,6 @@
 String chat_prompt(String username, String memory, String message) {
   final prompt =
-      "Here's a conversation between user $username and AI: \n From given context \n $memory \n response this message: $message";
+      "Here's a conversation between human name $username and AI, \n From given context: \n $memory \n response this message: $message";
   return prompt;
 }
 
