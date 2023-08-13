@@ -50,11 +50,9 @@ class ChatTitleNotifier extends StateNotifier<List<ChatTitleModel>> {
         .get();
     List<ChatTitleModel> chatTitlesList = [];
     for (var element in chatTitles.docs) {
-      // final option = Text(element.data()['Username']);
       chatTitlesList.add(ChatTitleModel(
           chatid: element.id,
           chattitle: element.data()['chatTitle'],
-          // chatDate: element.data()['createdAt'],
           memory: element.data()['memory']));
     }
     state = chatTitlesList;

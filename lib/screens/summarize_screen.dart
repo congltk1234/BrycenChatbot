@@ -61,6 +61,9 @@ class _SummarizeScreenstate extends ConsumerState<SummarizeScreen> {
     ref
         .read(suggestProvider.notifier)
         .fetchDatafromFireStore(widget.uid, widget.chatTitleID);
+    Directory('/data/user/0/com.example.brycen_chatbot/cache/file_picker/')
+        .create(recursive: true);
+
     super.initState();
   }
 
@@ -76,6 +79,16 @@ class _SummarizeScreenstate extends ConsumerState<SummarizeScreen> {
         _listScrollController.position.maxScrollExtent,
         duration: const Duration(milliseconds: 100),
         curve: Curves.easeInOut);
+  }
+
+  void notify(String message) {
+    ScaffoldMessenger.of(context).clearSnackBars();
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        backgroundColor: Theme.of(context).colorScheme.secondary,
+        content: Text('$message...'),
+      ),
+    );
   }
 
   void documentQA(String message) async {
@@ -142,10 +155,7 @@ class _SummarizeScreenstate extends ConsumerState<SummarizeScreen> {
     });
   }
 
-  Future<void> _uploadedFile(String path) async {
-    setState(() {
-      _isLoading = true;
-    });
+  Future<void> _uploadedFile(String path, String url) async {
     TextLoader loader = TextLoader(path);
     const textSplitter = RecursiveCharacterTextSplitter();
     final docs = await loader.load();
@@ -161,13 +171,13 @@ class _SummarizeScreenstate extends ConsumerState<SummarizeScreen> {
           ),
         )
         .toList(growable: false);
-
     final embeddings = langOpenAI.OpenAIEmbeddings(apiKey: widget.apiKey);
     final docSearch = await MemoryVectorStore.fromDocuments(
       documents: textsWithSources,
       embeddings: embeddings,
     );
-    print('Finish Embeddings');
+    notify('Store Document Embeddings...');
+
     for (var element in docSearch.memoryVectors) {
       await FirebaseFirestore.instance
           .collection("users")
@@ -181,7 +191,6 @@ class _SummarizeScreenstate extends ConsumerState<SummarizeScreen> {
         'metadata': element.metadata
       });
     }
-    print('Uploaded Embeddings to FireStore');
     // listVector.
     final llm = langOpenAI.ChatOpenAI(
         temperature: 0.1,
@@ -193,10 +202,9 @@ class _SummarizeScreenstate extends ConsumerState<SummarizeScreen> {
       llm: llm,
       promptTemplate: docPrompt,
     );
-
     final summary = await summarizeChain.run(docsChunks);
-    print(summary);
-    print('-----------');
+    notify('Summarize Document...');
+
     final re = RegExp(r'((Question)|(question)|(QUESTION))\W\d\W');
     final suggestList = summary.split(re);
     final sumaryContent = suggestList.removeAt(0);
@@ -207,9 +215,6 @@ class _SummarizeScreenstate extends ConsumerState<SummarizeScreen> {
     String topic = topicSummary.removeAt(0);
     topicSummary = topic.split(RegExp(r'((topic)|(Topic)|(TOPIC))\W*'));
     topic = topicSummary.removeLast();
-    //  = topic.replaceFirstMapped(
-    // RegExp(r'((topic)|(Topic)|(TOPIC))\W*'), (m) => '');
-
     await FirebaseFirestore.instance
         .collection("users")
         .doc(widget.uid)
@@ -217,7 +222,7 @@ class _SummarizeScreenstate extends ConsumerState<SummarizeScreen> {
         .doc(widget.chatTitleID)
         .update(
       {
-        "FilePath": path,
+        'url': url,
         'chatTitle': topic.trim(),
         "modifiedAt": Timestamp.now(),
       },
@@ -235,6 +240,7 @@ class _SummarizeScreenstate extends ConsumerState<SummarizeScreen> {
       'totalTokens': 0,
       "createdAt": Timestamp.now(),
     });
+    notify('Parsing and Stored response...');
 
     for (var i in suggestList) {
       await FirebaseFirestore.instance
@@ -248,7 +254,6 @@ class _SummarizeScreenstate extends ConsumerState<SummarizeScreen> {
         "createdAt": Timestamp.now(),
       });
     }
-    print('Uploaded Summarize');
     setState(() {
       widget.hasFile = true;
       _isLoading = false;
@@ -349,47 +354,120 @@ class _SummarizeScreenstate extends ConsumerState<SummarizeScreen> {
                                     if (result == null) return;
 
                                     PlatformFile file = result.files.first;
+                                    setState(() {
+                                      _isLoading = true;
+                                    });
                                     String filename =
                                         file.name.split('.').first;
                                     String fileContent;
                                     switch (file.extension) {
                                       case 'txt':
-                                        _uploadedFile(
-                                          file.path!,
+                                        notify(
+                                            'Upload file to Firebase Storage...');
+                                        final url = await uploadFile(
+                                            widget.uid, File(file.path!));
+                                        _uploadedFile(file.path!, url);
+                                        await FirebaseFirestore.instance
+                                            .collection("users")
+                                            .doc(widget.uid)
+                                            .collection('summarize')
+                                            .doc(widget.chatTitleID)
+                                            .update(
+                                          {
+                                            "FilePath": file.path!,
+                                          },
                                         );
                                         break;
                                       case 'docx':
                                         fileContent =
                                             await doc2text(file.path!);
+                                        notify('Converting docx to text...');
+
                                         final myFile = File(
                                             '/data/user/0/com.example.brycen_chatbot/cache/file_picker/$filename.txt');
-                                        await myFile.writeAsString(fileContent);
-                                        _uploadedFile(
-                                          myFile.path,
+                                        await myFile
+                                            .writeAsString(fileContent)
+                                            .then((value) => notify(
+                                                'Upload file to Firebase Storage...'));
+
+                                        final url = await uploadFile(
+                                            widget.uid, File(file.path!));
+                                        _uploadedFile(myFile.path, url);
+
+                                        await FirebaseFirestore.instance
+                                            .collection("users")
+                                            .doc(widget.uid)
+                                            .collection('summarize')
+                                            .doc(widget.chatTitleID)
+                                            .update(
+                                          {
+                                            "FilePath": file.path!,
+                                          },
                                         );
                                         break;
                                       case 'pdf':
                                         fileContent =
                                             await pdf2text(file.path!);
+                                        notify('Extracting text from pdf...');
+
                                         final myFile = File(
                                             '/data/user/0/com.example.brycen_chatbot/cache/file_picker/$filename.txt');
-                                        await myFile.writeAsString(fileContent);
-                                        _uploadedFile(
-                                          myFile.path,
+                                        await myFile
+                                            .writeAsString(fileContent)
+                                            .then((value) => notify(
+                                                'Upload file to Firebase Storage...'));
+                                        final url = await uploadFile(
+                                            widget.uid, File(file.path!));
+                                        _uploadedFile(myFile.path, url);
+                                        await FirebaseFirestore.instance
+                                            .collection("users")
+                                            .doc(widget.uid)
+                                            .collection('summarize')
+                                            .doc(widget.chatTitleID)
+                                            .update(
+                                          {
+                                            "FilePath": file.path!,
+                                          },
+                                        );
+                                        await FirebaseFirestore.instance
+                                            .collection("users")
+                                            .doc(widget.uid)
+                                            .collection('summarize')
+                                            .doc(widget.chatTitleID)
+                                            .update(
+                                          {
+                                            "FilePath": file.path!,
+                                          },
                                         );
                                         break;
                                       case 'mpga':
                                       case 'mpeg':
                                       case 'wav':
                                       case 'mp3':
-                                        print('Audio Process...');
+                                        notify(
+                                            'Calling Whisper for speech to text...');
                                         fileContent = await speech2text(
                                             widget.apiKey, file.path!);
+
                                         final myFile = File(
                                             '/data/user/0/com.example.brycen_chatbot/cache/file_picker/${filename}_script.txt');
-                                        await myFile.writeAsString(fileContent);
-                                        _uploadedFile(
-                                          myFile.path,
+                                        await myFile
+                                            .writeAsString(fileContent)
+                                            .then((value) => notify(
+                                                'Upload file to Firebase Storage...'));
+                                        final url = await uploadFile(
+                                            widget.uid, myFile);
+                                        _uploadedFile(myFile.path, url);
+
+                                        await FirebaseFirestore.instance
+                                            .collection("users")
+                                            .doc(widget.uid)
+                                            .collection('summarize')
+                                            .doc(widget.chatTitleID)
+                                            .update(
+                                          {
+                                            "FilePath": myFile.path,
+                                          },
                                         );
                                         break;
                                       default:
@@ -403,8 +481,6 @@ class _SummarizeScreenstate extends ConsumerState<SummarizeScreen> {
                         ),
                 );
               }
-
-              ////////// Handle OutofList error
               final loadedMessages =
                   List.from(chatSnapshots.data!.docs.reversed);
               final lengthHistory = loadedMessages.length;
@@ -448,7 +524,6 @@ class _SummarizeScreenstate extends ConsumerState<SummarizeScreen> {
                                           itemBuilder: (context, index) {
                                             final chatMessage =
                                                 loadedMessages[index].data();
-
                                             return ChatItem(
                                               humanMessage:
                                                   chatMessage["Human"],
@@ -499,7 +574,6 @@ class _SummarizeScreenstate extends ConsumerState<SummarizeScreen> {
                                               : () async {
                                                   documentQA(suggestList[index]
                                                       .suggestQuestion!);
-
                                                   await FirebaseFirestore
                                                       .instance
                                                       .collection("users")
@@ -514,9 +588,12 @@ class _SummarizeScreenstate extends ConsumerState<SummarizeScreen> {
                                                           "Suggest Deleted"))
                                                       .catchError((error) => print(
                                                           "Failed to delete: $error"));
-                                                  setState(() {
-                                                    suggestList.removeAt(index);
-                                                  });
+                                                  setState(
+                                                    () {
+                                                      suggestList
+                                                          .removeAt(index);
+                                                    },
+                                                  );
                                                 },
                                         );
                                       },
@@ -538,8 +615,21 @@ class _SummarizeScreenstate extends ConsumerState<SummarizeScreen> {
                                           .collection('summarize')
                                           .doc(widget.chatTitleID)
                                           .get();
-                                      OpenFile.open(
-                                          fileData.data()!['FilePath']);
+                                      final url = fileData.data()!['url'];
+                                      final path = fileData.data()!['FilePath'];
+                                      final fileExist =
+                                          await File(path).exists();
+                                      switch (fileExist) {
+                                        case false:
+                                          print('need dowwnload');
+                                          await downloadFile(url, path);
+                                          continue open;
+                                        open:
+                                        case true:
+                                          OpenFile.open(path);
+                                          print('read');
+                                        default:
+                                      }
                                     },
                                   ),
                                 ),

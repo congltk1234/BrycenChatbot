@@ -1,4 +1,4 @@
-import 'package:brycen_chatbot/widget/app_bar.dart';
+import '../widget/app_bar.dart';
 import 'package:flutter/material.dart';
 import 'package:open_file/open_file.dart';
 

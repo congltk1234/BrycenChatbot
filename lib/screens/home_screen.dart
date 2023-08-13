@@ -1,5 +1,7 @@
 import 'dart:io';
 
+import '../services/file_handler.dart';
+
 import '../models/chatTitle.dart';
 import '../providers/menu_provider.dart';
 import 'chat_screen.dart';
@@ -42,6 +44,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   bool? _isAPI;
   String? errorText;
   String? newID;
+
   @override
   void initState() {
     checkInternet();
@@ -97,8 +100,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         ),
       );
 
-      // send to fitebase
-      ////// Handle login
       print('Kiểm userID local');
       setState(() {
         _isExpired = false;
@@ -210,7 +211,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               child: Image.asset('assets/images/brycen_square.png'),
             ),
             TextFormField(
+              textAlign: TextAlign.center,
               autofocus: true,
+              style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                  color: Theme.of(context).colorScheme.primary),
               textCapitalization: TextCapitalization.words,
               controller: _enteredUsername,
               decoration: InputDecoration(
@@ -229,14 +235,34 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 return null;
               },
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: 10),
             TextFormField(
+              style: TextStyle(color: Theme.of(context).colorScheme.primary),
               controller: _enteredAPIKey,
               obscureText: passwordVisible,
               decoration: InputDecoration(
+                filled: true,
+                fillColor: Theme.of(context)
+                    .colorScheme
+                    .secondaryContainer
+                    .withOpacity(0.4),
                 labelText: 'API Key',
-                prefixIcon: Icon(Icons.key,
-                    color: Theme.of(context).colorScheme.secondary),
+                prefixIcon: IconButton(
+                  padding: EdgeInsets.all(0),
+                  icon: Icon(
+                      passwordVisible ? Icons.visibility : Icons.visibility_off,
+                      size: 20,
+                      color: passwordVisible
+                          ? Theme.of(context).colorScheme.primary
+                          : Colors.grey),
+                  onPressed: () {
+                    setState(
+                      () {
+                        passwordVisible = !passwordVisible;
+                      },
+                    );
+                  },
+                ),
                 hintText: "Insert your OpenAPI key...",
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(20),
@@ -249,22 +275,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                       padding: EdgeInsets.all(0),
                       icon: const Icon(Icons.clear),
                       onPressed: _enteredAPIKey.clear,
-                    ),
-                    IconButton(
-                      padding: EdgeInsets.all(0),
-                      icon: Icon(
-                        passwordVisible
-                            ? Icons.visibility
-                            : Icons.visibility_off,
-                        size: 20,
-                      ),
-                      onPressed: () {
-                        setState(
-                          () {
-                            passwordVisible = !passwordVisible;
-                          },
-                        );
-                      },
                     ),
                   ],
                 ),
@@ -292,6 +302,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             ),
             const SizedBox(height: 10),
             ElevatedButton(
+              style: ButtonStyle(
+                  backgroundColor: MaterialStateProperty.all<Color>(
+                      Theme.of(context).colorScheme.primary),
+                  foregroundColor:
+                      MaterialStateProperty.all<Color>(Colors.white)),
               onPressed: () {
                 if (_formKey.currentState!.validate()) {
                   _submit();
@@ -320,7 +335,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 style: const TextStyle(
                   fontSize: 20,
                 ),
-                text: 'Hello ', // default text style
+                text: 'Hello ',
                 children: [
                   TextSpan(
                       text: _initUsername,
@@ -375,7 +390,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
     return Scaffold(
       key: scaffoldKey,
-      // appBar: const ConfigAppBar(title: 'Home Screen'),
       drawer: SafeArea(
         child: DrawerMenu(context, chatTitle, true),
       ),
@@ -402,36 +416,45 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 ],
               ),
             )),
-        connected: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: <Widget>[
-              userForm,
-              if (_isValid)
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children: [
-                    ElevatedButton(
-                      onPressed: () {
-                        ref
-                            .read(chatTitleProvider.notifier)
-                            .fetchDatafromFireStore(_initUID);
-                        scaffoldKey.currentState!.openDrawer();
-                      },
-                      child: const Text('Chatbot'),
-                    ),
-                    ElevatedButton(
-                      onPressed: () {
-                        ref
-                            .read(summaryProvider.notifier)
-                            .fetchDatafromFireStore(_initUID);
-                        scaffoldKey.currentState!.openEndDrawer();
-                      },
-                      child: const Text('Summary'),
-                    ),
-                  ],
-                ),
-            ],
+        connected: Container(
+          width: double.infinity,
+          height: double.infinity,
+          decoration: const BoxDecoration(
+              image: DecorationImage(
+                  image: ExactAssetImage('assets/images/background.png'),
+                  fit: BoxFit.fill,
+                  alignment: Alignment.topCenter)),
+          child: Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: <Widget>[
+                userForm,
+                if (_isValid)
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: [
+                      ElevatedButton(
+                        onPressed: () {
+                          ref
+                              .read(chatTitleProvider.notifier)
+                              .fetchDatafromFireStore(_initUID);
+                          scaffoldKey.currentState!.openDrawer();
+                        },
+                        child: const Text('Chatbot'),
+                      ),
+                      ElevatedButton(
+                        onPressed: () {
+                          ref
+                              .read(summaryProvider.notifier)
+                              .fetchDatafromFireStore(_initUID);
+                          scaffoldKey.currentState!.openEndDrawer();
+                        },
+                        child: const Text('Summary'),
+                      ),
+                    ],
+                  ),
+              ],
+            ),
           ),
         ),
       ),
@@ -441,6 +464,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   Drawer DrawerMenu(
       BuildContext context, List<ChatTitleModel> widgetOptions, bool mode) {
     return Drawer(
+      width: MediaQuery.of(context).size.width * 3 / 5,
       child: SafeArea(
         child: Column(
           children: [
@@ -487,7 +511,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                             memory: '',
                           ),
                         );
-                // ignore: use_build_context_synchronously
                 mode
                     ? Navigator.push(
                         context,
@@ -534,6 +557,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                       color: Colors.red,
                     ),
                     onDismissed: (DismissDirection direction) {
+                      bool _isCancel = true;
+
                       showDialog(
                         context: context,
                         builder: (ctx) => AlertDialog(
@@ -550,68 +575,66 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                                         .primary
                                         .withOpacity(0.05)),
                               ),
-                              onPressed: !_isLoading
-                                  ? () async {
-                                      setState(() {
-                                        _isLoading = true;
-                                      });
-                                      final instance =
-                                          FirebaseFirestore.instance;
-                                      final batch = instance.batch();
-                                      var document = instance
-                                          .collection("users")
-                                          .doc(_initUID)
-                                          .collection(
-                                              mode ? "chat" : "summarize")
-                                          .doc(widgetOptions[index].chatid!);
-                                      if (mode) {
-                                        var snapshots = await document
-                                            .collection('chat_history')
-                                            .get();
-                                        for (var doc in snapshots.docs) {
-                                          batch.delete(doc.reference);
-                                        }
-                                      } else {
-                                        var snapshots = await document
-                                            .collection('QuestionAnswering')
-                                            .get();
-                                        for (var doc in snapshots.docs) {
-                                          batch.delete(doc.reference);
-                                        }
-                                        snapshots = await document
-                                            .collection('embeddedVectors')
-                                            .get();
-                                        for (var doc in snapshots.docs) {
-                                          batch.delete(doc.reference);
-                                        }
-                                        snapshots = await document
-                                            .collection('suggestion')
-                                            .get();
-                                        for (var doc in snapshots.docs) {
-                                          batch.delete(doc.reference);
-                                        }
-                                      }
-                                      await batch.commit();
+                              onPressed: () async {
+                                final instance = FirebaseFirestore.instance;
+                                final batch = instance.batch();
+                                Navigator.pop(ctx);
+                                // ScaffoldMessenger.of(context).showSnackBar(
+                                //   SnackBar(
+                                //     backgroundColor:
+                                //         Theme.of(context).colorScheme.secondary,
+                                //     content: const Text(
+                                //         'Deleting this conversation...'),
+                                //   ),
+                                // );
+                                var document = instance
+                                    .collection("users")
+                                    .doc(_initUID)
+                                    .collection(mode ? "chat" : "summarize")
+                                    .doc(widgetOptions[index].chatid!);
+                                if (mode) {
+                                  var snapshots = await document
+                                      .collection('chat_history')
+                                      .get();
+                                  for (var doc in snapshots.docs) {
+                                    batch.delete(doc.reference);
+                                  }
+                                } else {
+                                  var snapshots = await document
+                                      .collection('QuestionAnswering')
+                                      .get();
+                                  for (var doc in snapshots.docs) {
+                                    batch.delete(doc.reference);
+                                  }
+                                  snapshots = await document
+                                      .collection('embeddedVectors')
+                                      .get();
+                                  for (var doc in snapshots.docs) {
+                                    batch.delete(doc.reference);
+                                  }
+                                  snapshots = await document
+                                      .collection('suggestion')
+                                      .get();
+                                  for (var doc in snapshots.docs) {
+                                    batch.delete(doc.reference);
+                                  }
+                                }
+                                await batch.commit();
 
-                                      await FirebaseFirestore.instance
-                                          .collection("users")
-                                          .doc(_initUID)
-                                          .collection(
-                                              mode ? "chat" : "summarize")
-                                          .doc(widgetOptions[index].chatid!)
-                                          .delete()
-                                          .then((value) =>
-                                              print("ChatTitle Deleted"))
-                                          .catchError((error) => print(
-                                              "Failed to delete: $error"));
-
-                                      setState(() {
-                                        widgetOptions.removeAt(index);
-                                        _isLoading = false;
-                                      });
-                                      Navigator.pop(ctx);
-                                    }
-                                  : null,
+                                await FirebaseFirestore.instance
+                                    .collection("users")
+                                    .doc(_initUID)
+                                    .collection(mode ? "chat" : "summarize")
+                                    .doc(widgetOptions[index].chatid!)
+                                    .delete()
+                                    .then((value) => print("ChatTitle Deleted"))
+                                    .catchError((error) =>
+                                        print("Failed to delete: $error"));
+                                setState(() {
+                                  widgetOptions.removeAt(index);
+                                  _isCancel = false;
+                                });
+                              },
                               child: const Text('Okay'),
                             ),
                             TextButton(
@@ -629,11 +652,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                       );
                     },
                     child: ListTile(
-                      // trailing: Icon(
-                      //   Icons.arrow_forward_ios,
-                      //   color: Colors.black26,
-                      //   size: 15,
-                      // ),
                       shape: const RoundedRectangleBorder(
                         side: BorderSide(color: Colors.black, width: 0.1),
                       ),
@@ -687,6 +705,13 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               leading: Icon(mode ? Icons.edit_document : Icons.aod),
               title: Text(mode ? 'Summarize' : 'Chat Bot'),
               onTap: () {
+                mode
+                    ? ref
+                        .read(summaryProvider.notifier)
+                        .fetchDatafromFireStore(_initUID)
+                    : ref
+                        .read(chatTitleProvider.notifier)
+                        .fetchDatafromFireStore(_initUID);
                 mode
                     ? scaffoldKey.currentState!.openEndDrawer()
                     : scaffoldKey.currentState!.openDrawer();
