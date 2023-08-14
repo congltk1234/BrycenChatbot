@@ -230,7 +230,7 @@ https://bobbyhadz.com/blog/flutterfire-is-not-recognized-as-internal-or-external
 |12.08.2023| File handler<br>InternetConnection Status| SwitchCase for handle file picked<br>Add more funtion: PDF2text, Docx2text<br>Add feature: View uploaded file on SummarizeScreen|
 |13.08.2023|Audio handler| Audio handle for `mp3, wav, mpga, mpeg`.<br>Add funtion: Speech2text using OpenAPI (whisper model).|
 |14.08.2023| Config App Name&Icon<br>README file|Delete unnecessary code<br>Testing, build APK<br>Write document…|
-
+|15.08.2023|Add logout<br>Update README|Refine the app, removing any redundant lines of code<br>Finish README|
 </details>
 
 
