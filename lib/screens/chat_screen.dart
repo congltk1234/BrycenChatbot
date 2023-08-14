@@ -1,5 +1,8 @@
 // ignore_for_file: avoid_print
 
+import 'package:brycen_chatbot/widget/internet_error.dart';
+import 'package:connection_notifier/connection_notifier.dart';
+
 import '../widget/app_bar.dart';
 import '../widget/chat/chat_item.dart';
 import '../widget/chat/text_and_voice.dart';
@@ -149,42 +152,48 @@ class _ChatScreenState extends State<ChatScreen> {
               print(widget.chatTitleID);
               return Scaffold(
                 appBar: ConfigAppBar(title: widget.chatTitle),
-                body: Column(
-                  children: [
-                    Expanded(
-                      child: ListView.builder(
-                          controller: _listScrollController,
-                          itemCount: lengthHistory,
-                          itemBuilder: (context, index) {
-                            final chatMessage = loadedMessages[index].data();
+                body: ConnectionNotifierToggler(
+                  onConnectionStatusChanged: (connected) {
+                    if (connected == null) return;
+                  },
+                  disconnected: const InternetError(),
+                  connected: Column(
+                    children: [
+                      Expanded(
+                        child: ListView.builder(
+                            controller: _listScrollController,
+                            itemCount: lengthHistory,
+                            itemBuilder: (context, index) {
+                              final chatMessage = loadedMessages[index].data();
 
-                            return ChatItem(
-                              humanMessage: chatMessage["Human"],
-                              botResponse: chatMessage["AI"],
-                              tokens: chatMessage["totalTokens"],
-                              timeStamp: DateFormat.yMMMd().add_jm().format(
-                                  DateTime.parse(chatMessage["createdAt"]
-                                      .toDate()
-                                      .toString())),
-                              shouldAnimate: lengthHistory < 1
-                                  ? lengthHistory == index
-                                  : lengthHistory - 1 == index,
-                            );
-                          }),
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.all(12.0),
-                      child: TextAndVoiceField(
-                        uid: widget.uid,
-                        userName: widget.userName,
-                        apiKey: widget.apiKey,
-                        memory: _memoryBuffer,
-                        taskMode: 'chat',
-                        chatID: widget.chatTitleID,
+                              return ChatItem(
+                                humanMessage: chatMessage["Human"],
+                                botResponse: chatMessage["AI"],
+                                tokens: chatMessage["totalTokens"],
+                                timeStamp: DateFormat.yMMMd().add_jm().format(
+                                    DateTime.parse(chatMessage["createdAt"]
+                                        .toDate()
+                                        .toString())),
+                                shouldAnimate: lengthHistory < 1
+                                    ? lengthHistory == index
+                                    : lengthHistory - 1 == index,
+                              );
+                            }),
                       ),
-                    ),
-                    const SizedBox(height: 8),
-                  ],
+                      Padding(
+                        padding: const EdgeInsets.all(12.0),
+                        child: TextAndVoiceField(
+                          uid: widget.uid,
+                          userName: widget.userName,
+                          apiKey: widget.apiKey,
+                          memory: _memoryBuffer,
+                          taskMode: 'chat',
+                          chatID: widget.chatTitleID,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                    ],
+                  ),
                 ),
               );
             case ConnectionState.done:

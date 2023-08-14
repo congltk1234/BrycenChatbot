@@ -1,5 +1,7 @@
 // ignore_for_file: avoid_print, use_build_context_synchronously, non_constant_identifier_names
 import 'dart:io';
+import 'package:brycen_chatbot/widget/internet_error.dart';
+
 import '../models/chatTitle.dart';
 import '../providers/menu_provider.dart';
 import 'chat_screen.dart';
@@ -396,25 +398,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         onConnectionStatusChanged: (connected) {
           if (connected == null) return;
         },
-        disconnected: Center(
-          key: UniqueKey(),
-          child: TextButton(
-            onPressed: () {},
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Image.asset('assets/images/logoBrycen.png'),
-                const Text(
-                  'Please check your internet connection',
-                  style: TextStyle(
-                    color: Colors.red,
-                    fontSize: 20,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
+        disconnected: const InternetError(),
         connected: Container(
           width: double.infinity,
           height: double.infinity,

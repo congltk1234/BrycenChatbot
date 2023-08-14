@@ -2,6 +2,9 @@
 
 import 'dart:io';
 
+import 'package:brycen_chatbot/widget/internet_error.dart';
+import 'package:connection_notifier/connection_notifier.dart';
+
 import '../const/prompt.dart';
 import '../models/suggestQuestion.dart';
 import '../providers/suggest_provider.dart';
@@ -308,177 +311,184 @@ class _SummarizeScreenstate extends ConsumerState<SummarizeScreen> {
               if (!chatSnapshots.hasData || chatSnapshots.data!.docs.isEmpty) {
                 return Scaffold(
                   appBar: ConfigAppBar(title: widget.chatTitle),
-                  body: _isLoading
-                      ? const Center(
-                          child: CircularProgressIndicator(
-                            backgroundColor: Color.fromARGB(255, 255, 246, 246),
-                          ),
-                        )
-                      : Column(
-                          children: [
-                            Expanded(
-                              child: Center(
-                                child: ElevatedButton.icon(
-                                  style: ButtonStyle(
-                                    minimumSize:
-                                        MaterialStateProperty.all<Size>(
-                                      const Size(
-                                        200,
-                                        70,
+                  body: ConnectionNotifierToggler(
+                    onConnectionStatusChanged: (connected) {
+                      if (connected == null) return;
+                    },
+                    disconnected: const InternetError(),
+                    connected: _isLoading
+                        ? const Center(
+                            child: CircularProgressIndicator(
+                              backgroundColor:
+                                  Color.fromARGB(255, 255, 246, 246),
+                            ),
+                          )
+                        : Column(
+                            children: [
+                              Expanded(
+                                child: Center(
+                                  child: ElevatedButton.icon(
+                                    style: ButtonStyle(
+                                      minimumSize:
+                                          MaterialStateProperty.all<Size>(
+                                        const Size(
+                                          200,
+                                          70,
+                                        ),
                                       ),
                                     ),
+                                    icon: const Icon(
+                                      Icons.cloud_upload,
+                                      size: 30,
+                                    ),
+                                    label: const Text(
+                                      "Upload File",
+                                      style: TextStyle(fontSize: 25),
+                                    ),
+                                    onPressed: () async {
+                                      final result =
+                                          await FilePicker.platform.pickFiles(
+                                        dialogTitle: "Only Text and Audio file",
+                                        type: FileType.custom,
+                                        allowedExtensions: [
+                                          'txt',
+                                          'pdf',
+                                          'docx',
+                                          'mp3',
+                                          'wav',
+                                          'mpga',
+                                          'mpeg'
+                                        ],
+                                      );
+                                      if (result == null) return;
+
+                                      PlatformFile file = result.files.first;
+                                      setState(() {
+                                        _isLoading = true;
+                                      });
+                                      String filename =
+                                          file.name.split('.').first;
+                                      String fileContent;
+                                      switch (file.extension) {
+                                        case 'txt':
+                                          notify(
+                                              'Upload file to Firebase Storage...');
+                                          final url = await uploadFile(
+                                              widget.uid, File(file.path!));
+                                          _uploadedFile(file.path!, url);
+                                          await FirebaseFirestore.instance
+                                              .collection("users")
+                                              .doc(widget.uid)
+                                              .collection('summarize')
+                                              .doc(widget.chatTitleID)
+                                              .update(
+                                            {
+                                              "FilePath": file.path!,
+                                            },
+                                          );
+                                          break;
+                                        case 'docx':
+                                          fileContent =
+                                              await doc2text(file.path!);
+                                          notify('Converting docx to text...');
+
+                                          final myFile = File(
+                                              '/data/user/0/com.example.brycen_chatbot/cache/file_picker/$filename.txt');
+                                          await myFile
+                                              .writeAsString(fileContent)
+                                              .then((value) => notify(
+                                                  'Upload file to Firebase Storage...'));
+
+                                          final url = await uploadFile(
+                                              widget.uid, File(file.path!));
+                                          _uploadedFile(myFile.path, url);
+
+                                          await FirebaseFirestore.instance
+                                              .collection("users")
+                                              .doc(widget.uid)
+                                              .collection('summarize')
+                                              .doc(widget.chatTitleID)
+                                              .update(
+                                            {
+                                              "FilePath": file.path!,
+                                            },
+                                          );
+                                          break;
+                                        case 'pdf':
+                                          fileContent =
+                                              await pdf2text(file.path!);
+                                          notify('Extracting text from pdf...');
+
+                                          final myFile = File(
+                                              '/data/user/0/com.example.brycen_chatbot/cache/file_picker/$filename.txt');
+                                          await myFile
+                                              .writeAsString(fileContent)
+                                              .then((value) => notify(
+                                                  'Upload file to Firebase Storage...'));
+                                          final url = await uploadFile(
+                                              widget.uid, File(file.path!));
+                                          _uploadedFile(myFile.path, url);
+                                          await FirebaseFirestore.instance
+                                              .collection("users")
+                                              .doc(widget.uid)
+                                              .collection('summarize')
+                                              .doc(widget.chatTitleID)
+                                              .update(
+                                            {
+                                              "FilePath": file.path!,
+                                            },
+                                          );
+                                          await FirebaseFirestore.instance
+                                              .collection("users")
+                                              .doc(widget.uid)
+                                              .collection('summarize')
+                                              .doc(widget.chatTitleID)
+                                              .update(
+                                            {
+                                              "FilePath": file.path!,
+                                            },
+                                          );
+                                          break;
+                                        case 'mpga':
+                                        case 'mpeg':
+                                        case 'wav':
+                                        case 'mp3':
+                                          notify(
+                                              'Calling Whisper for speech to text...');
+                                          fileContent = await speech2text(
+                                              widget.apiKey, file.path!);
+
+                                          final myFile = File(
+                                              '/data/user/0/com.example.brycen_chatbot/cache/file_picker/${filename}_script.txt');
+                                          await myFile
+                                              .writeAsString(fileContent)
+                                              .then((value) => notify(
+                                                  'Upload file to Firebase Storage...'));
+                                          final url = await uploadFile(
+                                              widget.uid, myFile);
+                                          _uploadedFile(myFile.path, url);
+
+                                          await FirebaseFirestore.instance
+                                              .collection("users")
+                                              .doc(widget.uid)
+                                              .collection('summarize')
+                                              .doc(widget.chatTitleID)
+                                              .update(
+                                            {
+                                              "FilePath": myFile.path,
+                                            },
+                                          );
+                                          break;
+                                        default:
+                                          print('No valid file');
+                                      }
+                                    },
                                   ),
-                                  icon: const Icon(
-                                    Icons.cloud_upload,
-                                    size: 30,
-                                  ),
-                                  label: const Text(
-                                    "Upload File",
-                                    style: TextStyle(fontSize: 25),
-                                  ),
-                                  onPressed: () async {
-                                    final result =
-                                        await FilePicker.platform.pickFiles(
-                                      dialogTitle: "Only Text and Audio file",
-                                      type: FileType.custom,
-                                      allowedExtensions: [
-                                        'txt',
-                                        'pdf',
-                                        'docx',
-                                        'mp3',
-                                        'wav',
-                                        'mpga',
-                                        'mpeg'
-                                      ],
-                                    );
-                                    if (result == null) return;
-
-                                    PlatformFile file = result.files.first;
-                                    setState(() {
-                                      _isLoading = true;
-                                    });
-                                    String filename =
-                                        file.name.split('.').first;
-                                    String fileContent;
-                                    switch (file.extension) {
-                                      case 'txt':
-                                        notify(
-                                            'Upload file to Firebase Storage...');
-                                        final url = await uploadFile(
-                                            widget.uid, File(file.path!));
-                                        _uploadedFile(file.path!, url);
-                                        await FirebaseFirestore.instance
-                                            .collection("users")
-                                            .doc(widget.uid)
-                                            .collection('summarize')
-                                            .doc(widget.chatTitleID)
-                                            .update(
-                                          {
-                                            "FilePath": file.path!,
-                                          },
-                                        );
-                                        break;
-                                      case 'docx':
-                                        fileContent =
-                                            await doc2text(file.path!);
-                                        notify('Converting docx to text...');
-
-                                        final myFile = File(
-                                            '/data/user/0/com.example.brycen_chatbot/cache/file_picker/$filename.txt');
-                                        await myFile
-                                            .writeAsString(fileContent)
-                                            .then((value) => notify(
-                                                'Upload file to Firebase Storage...'));
-
-                                        final url = await uploadFile(
-                                            widget.uid, File(file.path!));
-                                        _uploadedFile(myFile.path, url);
-
-                                        await FirebaseFirestore.instance
-                                            .collection("users")
-                                            .doc(widget.uid)
-                                            .collection('summarize')
-                                            .doc(widget.chatTitleID)
-                                            .update(
-                                          {
-                                            "FilePath": file.path!,
-                                          },
-                                        );
-                                        break;
-                                      case 'pdf':
-                                        fileContent =
-                                            await pdf2text(file.path!);
-                                        notify('Extracting text from pdf...');
-
-                                        final myFile = File(
-                                            '/data/user/0/com.example.brycen_chatbot/cache/file_picker/$filename.txt');
-                                        await myFile
-                                            .writeAsString(fileContent)
-                                            .then((value) => notify(
-                                                'Upload file to Firebase Storage...'));
-                                        final url = await uploadFile(
-                                            widget.uid, File(file.path!));
-                                        _uploadedFile(myFile.path, url);
-                                        await FirebaseFirestore.instance
-                                            .collection("users")
-                                            .doc(widget.uid)
-                                            .collection('summarize')
-                                            .doc(widget.chatTitleID)
-                                            .update(
-                                          {
-                                            "FilePath": file.path!,
-                                          },
-                                        );
-                                        await FirebaseFirestore.instance
-                                            .collection("users")
-                                            .doc(widget.uid)
-                                            .collection('summarize')
-                                            .doc(widget.chatTitleID)
-                                            .update(
-                                          {
-                                            "FilePath": file.path!,
-                                          },
-                                        );
-                                        break;
-                                      case 'mpga':
-                                      case 'mpeg':
-                                      case 'wav':
-                                      case 'mp3':
-                                        notify(
-                                            'Calling Whisper for speech to text...');
-                                        fileContent = await speech2text(
-                                            widget.apiKey, file.path!);
-
-                                        final myFile = File(
-                                            '/data/user/0/com.example.brycen_chatbot/cache/file_picker/${filename}_script.txt');
-                                        await myFile
-                                            .writeAsString(fileContent)
-                                            .then((value) => notify(
-                                                'Upload file to Firebase Storage...'));
-                                        final url = await uploadFile(
-                                            widget.uid, myFile);
-                                        _uploadedFile(myFile.path, url);
-
-                                        await FirebaseFirestore.instance
-                                            .collection("users")
-                                            .doc(widget.uid)
-                                            .collection('summarize')
-                                            .doc(widget.chatTitleID)
-                                            .update(
-                                          {
-                                            "FilePath": myFile.path,
-                                          },
-                                        );
-                                        break;
-                                      default:
-                                        print('No valid file');
-                                    }
-                                  },
                                 ),
                               ),
-                            ),
-                          ],
-                        ),
+                            ],
+                          ),
+                  ),
                 );
               }
               final loadedMessages =
@@ -503,152 +513,162 @@ class _SummarizeScreenstate extends ConsumerState<SummarizeScreen> {
               }
               return Scaffold(
                 appBar: ConfigAppBar(title: widget.chatTitle),
-                body: _isLoading
-                    ? const Center(
-                        child: CircularProgressIndicator(
-                          backgroundColor: Color.fromARGB(255, 255, 246, 246),
-                        ),
-                      )
-                    : Column(
-                        children: [
-                          Expanded(
-                            child: Stack(
-                              alignment: AlignmentDirectional.bottomCenter,
-                              children: [
-                                Column(
-                                  children: [
-                                    Expanded(
-                                      child: ListView.builder(
-                                          controller: _listScrollController,
-                                          itemCount: lengthHistory,
-                                          itemBuilder: (context, index) {
-                                            final chatMessage =
-                                                loadedMessages[index].data();
-                                            return ChatItem(
-                                              humanMessage:
-                                                  chatMessage["Human"],
-                                              botResponse: chatMessage["AI"],
-                                              tokens:
-                                                  chatMessage["totalTokens"],
-                                              timeStamp: DateFormat.yMMMd()
-                                                  .add_jm()
-                                                  .format(DateTime.parse(
-                                                      chatMessage["createdAt"]
-                                                          .toDate()
-                                                          .toString())),
-                                              shouldAnimate: false,
-                                            );
-                                          }),
-                                    ),
-                                    ListView.builder(
-                                      itemCount: suggestList.length,
-                                      shrinkWrap: true,
-                                      itemBuilder:
-                                          (BuildContext context, int index) {
-                                        return ActionChip(
-                                          padding: const EdgeInsets.symmetric(
-                                              vertical: 5, horizontal: 8),
-                                          backgroundColor: Theme.of(context)
-                                              .colorScheme
-                                              .primary
-                                              .withOpacity(0.07),
-                                          label: Container(
-                                              constraints: BoxConstraints(
-                                                  maxWidth:
-                                                      MediaQuery.of(context)
-                                                              .size
-                                                              .width *
-                                                          0.65),
-                                              child: Text(
-                                                suggestList[index]
-                                                    .suggestQuestion!
-                                                    .trim(),
-                                                textScaleFactor: 0.85,
-                                                softWrap: true,
-                                                maxLines: 2,
-                                              )),
-                                          shape: const StadiumBorder(
-                                              side: BorderSide()),
-                                          onPressed: _suggestLoading
-                                              ? null
-                                              : () async {
-                                                  documentQA(suggestList[index]
-                                                      .suggestQuestion!);
-                                                  await FirebaseFirestore
-                                                      .instance
-                                                      .collection("users")
-                                                      .doc(widget.uid)
-                                                      .collection("summarize")
-                                                      .doc(widget.chatTitleID)
-                                                      .collection('suggestion')
-                                                      .doc(
-                                                          suggestList[index].id)
-                                                      .delete()
-                                                      .then((value) => print(
-                                                          "Suggest Deleted"))
-                                                      .catchError((error) => print(
-                                                          "Failed to delete: $error"));
-                                                  setState(
-                                                    () {
-                                                      suggestList
-                                                          .removeAt(index);
-                                                    },
-                                                  );
-                                                },
-                                        );
+                body: ConnectionNotifierToggler(
+                  onConnectionStatusChanged: (connected) {
+                    if (connected == null) return;
+                  },
+                  disconnected: const InternetError(),
+                  connected: _isLoading
+                      ? const Center(
+                          child: CircularProgressIndicator(
+                            backgroundColor: Color.fromARGB(255, 255, 246, 246),
+                          ),
+                        )
+                      : Column(
+                          children: [
+                            Expanded(
+                              child: Stack(
+                                alignment: AlignmentDirectional.bottomCenter,
+                                children: [
+                                  Column(
+                                    children: [
+                                      Expanded(
+                                        child: ListView.builder(
+                                            controller: _listScrollController,
+                                            itemCount: lengthHistory,
+                                            itemBuilder: (context, index) {
+                                              final chatMessage =
+                                                  loadedMessages[index].data();
+                                              return ChatItem(
+                                                humanMessage:
+                                                    chatMessage["Human"],
+                                                botResponse: chatMessage["AI"],
+                                                tokens:
+                                                    chatMessage["totalTokens"],
+                                                timeStamp: DateFormat.yMMMd()
+                                                    .add_jm()
+                                                    .format(DateTime.parse(
+                                                        chatMessage["createdAt"]
+                                                            .toDate()
+                                                            .toString())),
+                                                shouldAnimate: false,
+                                              );
+                                            }),
+                                      ),
+                                      ListView.builder(
+                                        itemCount: suggestList.length,
+                                        shrinkWrap: true,
+                                        itemBuilder:
+                                            (BuildContext context, int index) {
+                                          return ActionChip(
+                                            padding: const EdgeInsets.symmetric(
+                                                vertical: 5, horizontal: 8),
+                                            backgroundColor: Theme.of(context)
+                                                .colorScheme
+                                                .primary
+                                                .withOpacity(0.07),
+                                            label: Container(
+                                                constraints: BoxConstraints(
+                                                    maxWidth:
+                                                        MediaQuery.of(context)
+                                                                .size
+                                                                .width *
+                                                            0.65),
+                                                child: Text(
+                                                  suggestList[index]
+                                                      .suggestQuestion!
+                                                      .trim(),
+                                                  textScaleFactor: 0.85,
+                                                  softWrap: true,
+                                                  maxLines: 2,
+                                                )),
+                                            shape: const StadiumBorder(
+                                                side: BorderSide()),
+                                            onPressed: _suggestLoading
+                                                ? null
+                                                : () async {
+                                                    documentQA(
+                                                        suggestList[index]
+                                                            .suggestQuestion!);
+                                                    await FirebaseFirestore
+                                                        .instance
+                                                        .collection("users")
+                                                        .doc(widget.uid)
+                                                        .collection("summarize")
+                                                        .doc(widget.chatTitleID)
+                                                        .collection(
+                                                            'suggestion')
+                                                        .doc(suggestList[index]
+                                                            .id)
+                                                        .delete()
+                                                        .then((value) => print(
+                                                            "Suggest Deleted"))
+                                                        .catchError((error) =>
+                                                            print(
+                                                                "Failed to delete: $error"));
+                                                    setState(
+                                                      () {
+                                                        suggestList
+                                                            .removeAt(index);
+                                                      },
+                                                    );
+                                                  },
+                                          );
+                                        },
+                                      ),
+                                    ],
+                                  ),
+                                  Positioned(
+                                    bottom: 10,
+                                    left: 5,
+                                    child: FloatingActionButton.small(
+                                      child: const Icon(
+                                        Icons.file_present_rounded,
+                                      ),
+                                      onPressed: () async {
+                                        final fileData = await FirebaseFirestore
+                                            .instance
+                                            .collection("users")
+                                            .doc(widget.uid)
+                                            .collection('summarize')
+                                            .doc(widget.chatTitleID)
+                                            .get();
+                                        final url = fileData.data()!['url'];
+                                        final path =
+                                            fileData.data()!['FilePath'];
+                                        final fileExist =
+                                            await File(path).exists();
+                                        switch (fileExist) {
+                                          case false:
+                                            print('need dowwnload');
+                                            await downloadFile(url, path);
+                                            continue open;
+                                          open:
+                                          case true:
+                                            OpenFile.open(path);
+                                            print('read');
+                                          default:
+                                        }
                                       },
                                     ),
-                                  ],
-                                ),
-                                Positioned(
-                                  bottom: 10,
-                                  left: 5,
-                                  child: FloatingActionButton.small(
-                                    child: const Icon(
-                                      Icons.file_present_rounded,
-                                    ),
-                                    onPressed: () async {
-                                      final fileData = await FirebaseFirestore
-                                          .instance
-                                          .collection("users")
-                                          .doc(widget.uid)
-                                          .collection('summarize')
-                                          .doc(widget.chatTitleID)
-                                          .get();
-                                      final url = fileData.data()!['url'];
-                                      final path = fileData.data()!['FilePath'];
-                                      final fileExist =
-                                          await File(path).exists();
-                                      switch (fileExist) {
-                                        case false:
-                                          print('need dowwnload');
-                                          await downloadFile(url, path);
-                                          continue open;
-                                        open:
-                                        case true:
-                                          OpenFile.open(path);
-                                          print('read');
-                                        default:
-                                      }
-                                    },
                                   ),
-                                ),
-                              ],
+                                ],
+                              ),
                             ),
-                          ),
-                          Padding(
-                            padding: const EdgeInsets.all(8.0),
-                            child: TextAndVoiceField(
-                              uid: widget.uid,
-                              userName: widget.userName,
-                              apiKey: widget.apiKey,
-                              memory: _memoryBuffer,
-                              taskMode: 'summarize',
-                              chatID: widget.chatTitleID,
+                            Padding(
+                              padding: const EdgeInsets.all(8.0),
+                              child: TextAndVoiceField(
+                                uid: widget.uid,
+                                userName: widget.userName,
+                                apiKey: widget.apiKey,
+                                memory: _memoryBuffer,
+                                taskMode: 'summarize',
+                                chatID: widget.chatTitleID,
+                              ),
                             ),
-                          ),
-                        ],
-                      ),
+                          ],
+                        ),
+                ),
               );
             case ConnectionState.done:
               break;
