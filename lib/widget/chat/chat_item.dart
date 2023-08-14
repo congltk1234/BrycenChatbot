@@ -67,7 +67,7 @@ class _ChatItemState extends State<ChatItem> {
                 Row(
                   // mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    const SizedBox(width: 45),
+                    const SizedBox(width: 15),
                     if (widget.tokens > 0)
                       Text(
                         'Used Tokens: ${widget.tokens.toString()}',

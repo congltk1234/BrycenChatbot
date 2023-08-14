@@ -10,14 +10,16 @@ A brief description of what this project does and who it's for
 
 |Login & Validation|Update & Logout|
 |--|--|
-<img src="https://raw.githubusercontent.com/congltk1234/BrycenChatbot/main/docs/assets/gif/Login.gif"  height="400"/>|<img src="https://raw.githubusercontent.com/congltk1234/BrycenChatbot/main/docs/assets/gif/Change_Logout.gif"  height="400"/>|<img src="https://raw.githubusercontent.com/congltk1234/BrycenChatbot/main/docs/assets/gif/Change_Logout.gif"  height="400"/>|
+<img src="https://raw.githubusercontent.com/congltk1234/BrycenChatbot/main/docs/assets/gif/Login.gif"  height="400"/>|<img src="https://raw.githubusercontent.com/congltk1234/BrycenChatbot/main/docs/assets/gif/Change_Logout.gif"  height="400"/>|
 
 
 |Drawer|Internet Status|
 |--|--|
-<img src="https://raw.githubusercontent.com/congltk1234/BrycenChatbot/main/docs/assets/gif/Login.gif"  height="400"/>|<img src="https://raw.githubusercontent.com/congltk1234/BrycenChatbot/main/docs/assets/gif/Change_Logout.gif"  height="400"/>|<img src="https://raw.githubusercontent.com/congltk1234/BrycenChatbot/main/docs/assets/gif/Change_Logout.gif"  height="400"/>|
+|Image herre|<img src="https://raw.githubusercontent.com/congltk1234/BrycenChatbot/main/docs/assets/gif/InternetConnection.gif"  height="400"/>|
 
 </details></h4>
+
+
 
 
 <h4><details open>
@@ -25,7 +27,7 @@ A brief description of what this project does and who it's for
 
 |Memory Chatbot|Speech2Text|Copy & Audio|
 |--|--|--|
-<img src="https://raw.githubusercontent.com/congltk1234/BrycenChatbot/main/docs/assets/gif/Login.gif"  height="400"/>|<img src="https://raw.githubusercontent.com/congltk1234/BrycenChatbot/main/docs/assets/gif/Change_Logout.gif"  height="400"/>|
+Chat memory|<img src="https://raw.githubusercontent.com/congltk1234/BrycenChatbot/main/docs/assets/gif/Change_Logout.gif"  height="400"/>||
 
 
 
@@ -38,7 +40,7 @@ A brief description of what this project does and who it's for
 |Summarize|View File|Question Suggest|
 |--|--|--|
 |Support Files<br>Document:`txt, pdf, docx`<br>Audio:`mp3, wav, mpga, mpeg`|Can view <br>`pdf, docx, txt`|Generate Related questions<br> about the document |
-<img src="https://raw.githubusercontent.com/congltk1234/BrycenChatbot/main/docs/assets/gif/Login.gif"  height="400"/>|<img src="https://raw.githubusercontent.com/congltk1234/BrycenChatbot/main/docs/assets/gif/QuestionChip.gif"  height="400"/>|<img src="https://raw.githubusercontent.com/congltk1234/BrycenChatbot/main/docs/assets/gif/QuestionChip.gif"  height="400"/>|
+<img src="https://raw.githubusercontent.com/congltk1234/BrycenChatbot/main/docs/assets/gif/Login.gif"  height="400"/>|Audio Image|<img src="https://raw.githubusercontent.com/congltk1234/BrycenChatbot/main/docs/assets/gif/QuestionChip.gif"  height="400"/>|
 
 </details></h4>
 
