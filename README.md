@@ -1,25 +1,25 @@
 
 # **BRYCEN Chatbot**
-Flutter Chatbot with OpenAI's ChatGPT 3.5 LLM
+Flutter Chatbot with OpenAI (GPT3.5 & Whisper) made by [@STkong](https://github.com/congltk1234/)
 
-A brief description of what this project does and who it's for
+|Description||
+|--|--|
+|This Flutter application integrates OpenAI's ChatGPT 3.5 LLM model to enable interactive conversations<br> and provides a feature to summarize uploaded documents and audio files. The app serves as a powerful tool for engaging conversations and efficient content summarization.<br>The app was developed during my internship at [BRYCEN Vietnam company](https://brycen.com.vn/en/)|[![logoApp](https://github.com/congltk1234/BrycenChatbot/assets/73183412/34b0c872-831a-417b-8341-d7c03efe1289)](https://github.com/congltk1234/BrycenChatbot/raw/main/output/release/app-release.apk)|
+
+
 
 ## Table of Contents
 
-- [Description](#description)
-- [Features](#features)
-- [Demo](#demo)
+- [Features](#features-and-demo)
+- [Prerequisites](#prerequisites)
 - [Installation](#installation)
-- [Usage](#usage)
-- [API Key Setup](#api-key-setup)
-- [Contributing](#contributing)
+- [Error](#error)
+- [Update](#update)
 - [License](#license)
 
-## Description
 
-This Flutter application integrates OpenAI's ChatGPT 3.5 LLM model to enable interactive conversations and provides a feature to summarize uploaded documents and audio files. The app serves as a powerful tool for engaging conversations and efficient content summarization.
 
-# Features
+## Features and Demo
 
 1. **Conversations with ChatGPT 3.5 LLM:**
    Engage in dynamic and natural conversations with OpenAI's ChatGPT 3.5 LLM model. Enjoy real-time responses and experience the capabilities of advanced language processing.
@@ -27,22 +27,17 @@ This Flutter application integrates OpenAI's ChatGPT 3.5 LLM model to enable int
 2. **Summarize File Upload:**
    Easily upload documents and audio files to generate concise summaries. The app utilizes cutting-edge summarization techniques to extract the most important information from your content.
 
-
-
-<h4><details open>
+<h4><details>
 <summary>Home Screen</summary>
 
 |Login & Validation|Update & Logout|Drawer|Internet Status|
 |--|--|--|--|
 <img src="https://raw.githubusercontent.com/congltk1234/BrycenChatbot/main/docs/assets/gif/Login.gif"  height="300"/>|<img src="https://raw.githubusercontent.com/congltk1234/BrycenChatbot/main/docs/assets/gif/Change_Logout.gif"  height="300"/>|<img src="https://raw.githubusercontent.com/congltk1234/BrycenChatbot/main/docs/assets/gif/drawer.gif"  height="300"/>|<img src="https://raw.githubusercontent.com/congltk1234/BrycenChatbot/main/docs/assets/gif/InternetConnection.gif"  height="300"/>|
 
-
 </details></h4>
 
 
-
-
-<h4><details open>
+<h4><details>
 <summary>Chat Screen</summary>
 
 |Memory Chatbot|Speech2Text|Copy & Audio|
@@ -54,7 +49,7 @@ This Flutter application integrates OpenAI's ChatGPT 3.5 LLM model to enable int
 </details></h4>
 
 
-<h4><details open>
+<h4><details>
 <summary>Summarize Screen</summary>
 
 |Summarize|View File|Question Suggest|
@@ -68,8 +63,18 @@ This Flutter application integrates OpenAI's ChatGPT 3.5 LLM model to enable int
 ## Prerequisites
 
 - **INSTALLED:** [npm](https://nodejs.org/en), [Flutter](https://docs.flutter.dev/get-started/install), [Git](https://git-scm.com/downloads), [Firebase CLI](https://firebase.google.com/docs/cli#setup_update_cli)
-- **OPENAI API KEY:**  You must have an OpenAI API key in order to use this application. You can obtain a key on this website [OpenAI](http://api.openai.com/v1/models) (Required an OpenAI account)
+- **OPENAI API KEY:**  You must have an OpenAI API key in order to use this application. 
 
+<details>
+<summary> API Key Setup </summary>
+<br>
+   To use the ChatGPT 3.5 LLM model, you need to set up an API key from OpenAI:
+
+   1. Go to the [OpenAI website](https://openai.com) and sign in or create an account.
+   2. Generate an API key for ChatGPT 3.5 LLM.
+   3. Copy the API key and input to the app.
+
+</details>
 
 
 ## Installation
@@ -98,13 +103,6 @@ This Flutter application integrates OpenAI's ChatGPT 3.5 LLM model to enable int
 
 </details>
 
-## API Key Setup
-
-To use the ChatGPT 3.5 LLM model, you need to set up an API key from OpenAI:
-
-1. Go to the [OpenAI website](https://openai.com) and sign in or create an account.
-2. Generate an API key for ChatGPT 3.5 LLM.
-3. Copy the API key and replace `'YOUR_API_KEY'` in `lib/services/openai_service.dart` with your actual API key.
 
 
 #### Login with Firebase CLI
@@ -177,10 +175,31 @@ Connect your Android device to your computer with a USB cable, then run the comm
 ```
 </details>
 
+## Error
 
+<details>
+   
+<summary>Command not found: flutterfire</summary>
 
+https://bobbyhadz.com/blog/flutterfire-is-not-recognized-as-internal-or-external-command
 
-## Time Tracking
+   - In your terminal and run this code to open <b>Advanced system settings</b>
+   
+   ```
+      SystemPropertiesAdvanced
+   ```
+   - Click Environment Variables. In the section System Variables find the PATH environment variable and select it. Click Edit. If the PATH environment variable does not exist, click New.
+   
+   - In the Edit System Variable (or New System Variable) window, specify the value of the PATH environment variable
+   ```
+   C:\Users\YourUsername\AppData\Local\Pub\Cache\bin
+   ```
+   - Click OK. Close all remaining windows by clicking OK.
+   - You might have to restart your computer to active path
+
+</details>
+
+## Update
 <details open>
 <summary>From 20.07.2023 to 14.08.2023</summary>
 
@@ -215,16 +234,7 @@ Connect your Android device to your computer with a USB cable, then run the comm
 </details>
 
 
+## License
 
-## Authors
-
-- [@Kongg](https://www.github.com/congltk1234)
-
-## Badges
-
-Add badges from somewhere like: [shields.io](https://shields.io/)
-
-[![MIT License](https://img.shields.io/badge/License-MIT-green.svg)](https://choosealicense.com/licenses/mit/)
-[![GPLv3 License](https://img.shields.io/badge/License-GPL%20v3-yellow.svg)](https://opensource.org/licenses/)
-[![AGPL License](https://img.shields.io/badge/license-AGPL-blue.svg)](http://www.gnu.org/licenses/agpl-3.0)
+This project is licensed under the [MIT License](LICENSE).
 
