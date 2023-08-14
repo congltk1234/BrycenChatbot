@@ -5,17 +5,18 @@ A brief description of what this project does and who it's for
 
 ## Features
 
+- Having engaging conversations with OpenAI's ChatGPT 3.5 LLM model
+
+- Summarize key infomation from text files and audio files and ask questions about them!
+
+
 <h4><details open>
 <summary>Home Screen</summary>
 
-|Login & Validation|Update & Logout|
-|--|--|
-<img src="https://raw.githubusercontent.com/congltk1234/BrycenChatbot/main/docs/assets/gif/Login.gif"  height="400"/>|<img src="https://raw.githubusercontent.com/congltk1234/BrycenChatbot/main/docs/assets/gif/Change_Logout.gif"  height="400"/>|
+|Login & Validation|Update & Logout|Drawer|Internet Status|
+|--|--|--|--|
+<img src="https://raw.githubusercontent.com/congltk1234/BrycenChatbot/main/docs/assets/gif/Login.gif"  height="300"/>|<img src="https://raw.githubusercontent.com/congltk1234/BrycenChatbot/main/docs/assets/gif/Change_Logout.gif"  height="300"/>|<img src="https://raw.githubusercontent.com/congltk1234/BrycenChatbot/main/docs/assets/gif/drawer.gif"  height="300"/>|<img src="https://raw.githubusercontent.com/congltk1234/BrycenChatbot/main/docs/assets/gif/InternetConnection.gif"  height="300"/>|
 
-
-|Drawer|Internet Status|
-|--|--|
-|Image herre|<img src="https://raw.githubusercontent.com/congltk1234/BrycenChatbot/main/docs/assets/gif/InternetConnection.gif"  height="400"/>|
 
 </details></h4>
 
@@ -27,7 +28,7 @@ A brief description of what this project does and who it's for
 
 |Memory Chatbot|Speech2Text|Copy & Audio|
 |--|--|--|
-Chat memory|<img src="https://raw.githubusercontent.com/congltk1234/BrycenChatbot/main/docs/assets/gif/Change_Logout.gif"  height="400"/>||
+|<img src="https://raw.githubusercontent.com/congltk1234/BrycenChatbot/main/docs/assets/ChatMemory.jpg"  height="400"/>|<img src="https://raw.githubusercontent.com/congltk1234/BrycenChatbot/main/docs/assets/gif/Change_Logout.gif" height="400"/>|<img src="https://raw.githubusercontent.com/congltk1234/BrycenChatbot/main/docs/assets/gif/copy.gif" height="400"/>|
 
 
 
@@ -40,14 +41,15 @@ Chat memory|<img src="https://raw.githubusercontent.com/congltk1234/BrycenChatbo
 |Summarize|View File|Question Suggest|
 |--|--|--|
 |Support Files<br>Document:`txt, pdf, docx`<br>Audio:`mp3, wav, mpga, mpeg`|Can view <br>`pdf, docx, txt`|Generate Related questions<br> about the document |
-<img src="https://raw.githubusercontent.com/congltk1234/BrycenChatbot/main/docs/assets/gif/Login.gif"  height="400"/>|Audio Image|<img src="https://raw.githubusercontent.com/congltk1234/BrycenChatbot/main/docs/assets/gif/QuestionChip.gif"  height="400"/>|
+<img src="https://raw.githubusercontent.com/congltk1234/BrycenChatbot/main/docs/assets/gif/summarizeTxt.gif"  height="400"/>|<img src="https://raw.githubusercontent.com/congltk1234/BrycenChatbot/main/docs/assets/gif/viewFile.gif"  height="400"/>|<img src="https://raw.githubusercontent.com/congltk1234/BrycenChatbot/main/docs/assets/gif/QuestionChip.gif"  height="400"/>|
 
 </details></h4>
 
 
 ## Prerequisites
 
-**Installed:** [npm](https://nodejs.org/en), [Flutter](https://docs.flutter.dev/get-started/install), 
+- **INSTALLED:** [npm](https://nodejs.org/en), [Flutter](https://docs.flutter.dev/get-started/install), [Git](https://git-scm.com/downloads), [Firebase CLI](https://firebase.google.com/docs/cli#setup_update_cli)
+- **OPENAI API KEY:**  You must have an OpenAI API key in order to use this application. You can obtain a key on this website [OpenAI](http://api.openai.com/v1/models) (Required an OpenAI account)
 
 
 
@@ -115,7 +117,7 @@ Running the following command from any directory:
 ```bash
   flutterfire configure
 ```
-
+![FirebaseStorage](https://raw.githubusercontent.com/congltk1234/BrycenChatbot/main/docs/assets/gif/flutterfire_configure.gif)
 
 
 
