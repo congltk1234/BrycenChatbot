@@ -1,13 +1,32 @@
 
-# Project Title
+# **BRYCEN Chatbot**
+Flutter Chatbot with OpenAI's ChatGPT 3.5 LLM
 
 A brief description of what this project does and who it's for
 
-## Features
+## Table of Contents
 
-- Having engaging conversations with OpenAI's ChatGPT 3.5 LLM model
+- [Description](#description)
+- [Features](#features)
+- [Demo](#demo)
+- [Installation](#installation)
+- [Usage](#usage)
+- [API Key Setup](#api-key-setup)
+- [Contributing](#contributing)
+- [License](#license)
 
-- Summarize key infomation from text files and audio files and ask questions about them!
+## Description
+
+This Flutter application integrates OpenAI's ChatGPT 3.5 LLM model to enable interactive conversations and provides a feature to summarize uploaded documents and audio files. The app serves as a powerful tool for engaging conversations and efficient content summarization.
+
+# Features
+
+1. **Conversations with ChatGPT 3.5 LLM:**
+   Engage in dynamic and natural conversations with OpenAI's ChatGPT 3.5 LLM model. Enjoy real-time responses and experience the capabilities of advanced language processing.
+
+2. **Summarize File Upload:**
+   Easily upload documents and audio files to generate concise summaries. The app utilizes cutting-edge summarization techniques to extract the most important information from your content.
+
 
 
 <h4><details open>
@@ -78,6 +97,14 @@ A brief description of what this project does and who it's for
 ![FirebaseStorage](https://raw.githubusercontent.com/congltk1234/BrycenChatbot/main/docs/assets/gif/3_firebaseStorage.gif)
 
 </details>
+
+## API Key Setup
+
+To use the ChatGPT 3.5 LLM model, you need to set up an API key from OpenAI:
+
+1. Go to the [OpenAI website](https://openai.com) and sign in or create an account.
+2. Generate an API key for ChatGPT 3.5 LLM.
+3. Copy the API key and replace `'YOUR_API_KEY'` in `lib/services/openai_service.dart` with your actual API key.
 
 
 #### Login with Firebase CLI
