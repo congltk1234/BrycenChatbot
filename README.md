@@ -3,7 +3,6 @@
 
 A brief description of what this project does and who it's for
 
-
 ## Features
 
 - Light/dark mode toggle
@@ -29,18 +28,30 @@ A brief description of what this project does and who it's for
 
 ## Installation
 ### 1. Settup Firebase for Flutter app
-#### Init Firebase
-- Create new project:
+#### Init Firebase project
+
+<details open>
+<summary>Step1: Create new Firebase project</summary>
 
 ![Init Firebase project](https://raw.githubusercontent.com/congltk1234/BrycenChatbot/main/docs/assets/gif/1_initProject.gif)
 
-- Set Up FireStore Database for store app data:
+</details>
+
+<details>
+<summary>Step2: Set Up FireStore Database</summary>
 
 ![FirestoreDatabase](https://raw.githubusercontent.com/congltk1234/BrycenChatbot/main/docs/assets/gif/2_FirestoreDatabase.gif)
 
-- Set Up Firebase Storage for store files:
+</details>
+
+
+<details>
+<summary>Step3: Set Up Firebase Storage for store files</summary>
 
 ![FirebaseStorage](https://raw.githubusercontent.com/congltk1234/BrycenChatbot/main/docs/assets/gif/3_firebaseStorage.gif)
+
+</details>
+
 
 #### Login with Firebase CLI
 Install [Firebase CLI](https://firebase.google.com/docs/cli#setup_update_cli) via npm by running the following command:
@@ -48,7 +59,7 @@ Install [Firebase CLI](https://firebase.google.com/docs/cli#setup_update_cli) vi
   npm install -g firebase-tools
 ```
 
-Then login your google account
+Then Log into Firebase using your Google account
 
 ```bash
   firebase login
@@ -85,28 +96,66 @@ Running the following command from any directory:
 <details>
 <summary>Build file APK</summary>
 <br>
-This is how you dropdown.
-
 
 ```bash
   flutter build apk
+```
+or
+```bash
+  flutter build apk --no-pub --no-shrink
 ```
 
 </details>
 
 <details>
-<summary>Install APK on a device</summary>
+<summary>Install the APK on a connected Android device</summary>
 <br>
-Follow these steps to install the APK on a connected Android device. From the command line connect your Android device to your computer with a USB cable.
+Connect your Android device to your computer with a USB cable, then run the command line
 
 ```bash
   flutter install
 ```
 </details>
 
+## Time Tracking
+<details open>
+<summary>From 20.07.2023 to 14.08.2023</summary>
+
+|Date|Task|Notes|
+|--|--|--|
+|20.07.2023| Init Project |Init simple HomeScreen, ChatScreen and Summarize.<br>Setup Themes and ColorSchemes.|
+|21.07.2023|Route setup| Navigation between screens via route setting using `Navigator.pushNamed`.|
+|22.07.2023| HomeScreen UI|Init FormWidget for input Username OpenAI key.|
+|23.07.2023|Store User input values|Implement packages SharePreferences to store locally on device.|
+|24.07.2023|UserForm|Username and API key validation (sending test request).|
+|25.07.2023|UserForm Submit |Submit for store value to SharePreferences and switch to welcome widget.|
+|26.07.2023| ChatScreen UI| Update ChatScreen UI: ListView chatMessages and ChatInput.|
+|27.07.2023| Voice feature| Implement speech_to_text packages in ChatScreen, Switch between sendVoice function and sendText function.|
+|28.07.2023| Firebase Connection| Set up Firebase project and implemented messages upload and get with FireStore Database.|
+|29.07.2023| OpenAPI request| Chat response and test with these packages: dart_openai, langchain, langchain_openai.<br> Implement MemoryBuffer.|
+|30.07.2023<br>31.07.2023| Update ChatScreen UI| Display: TimeStamp, tokenUsed.<br>Add more features: Copy , Text2Speech.<br>Animation: AutoScrolltoEnd.<br>TyperAnimatedText.|
+|01.08.2023| Fix Chat Stream error|Change DataModel, add SwitchCase for StreamBuild, update condition.|
+|02.08.2023|Summarize feature|Summarize UI: Upload file button, read file txt.<br>Test response with embedding, retriveQA and StuffSummarize.|
+|03.08.2023| Update Summarize feature| Store and Retrive sumamrize content, file’s embedded vector with FireStore Database.|
+|04.08.2023|Dynamic Drawer|Retrive and display ChatTitle on Drawer with List StreamBuilder|
+|05.08.2023| ChatDrawer<br>SummarizeDrawer| Control Drawer with button<br>Update Drawer UI<br>SurfixIcon for hide/show password|
+|06.08.2023|App Provider| Passing data between Screens with flutter_riverpod, notifiListener and consumer|
+|07.08.2023|Prompt Template| Prompt and use Regex to extract information from response: Detect language, auto genarate chatTitle (chat topic) for Chat and summarize|
+|08.08.2023| ChatItem Navigation| Linked MenuChat Drawler with chat button.<br>Open and load chat history by click on ChatTitle in drawer.|
+|09.08.2023|NewChat button| Add new converstion function<br>Generate topic for chat title, update menu chat UI|
+|10.08.2023|Delete ChatItem| Wrapped ChatTile with Dismissible<br>Delete confirmation with AlertDialog|
+|11.08.2023| Suggest Question| Display interactable Suggest Question chips and update Chat UI.|
+|12.08.2023| File handler<br>InternetConnection Status| SwitchCase for handle file picked<br>Add more funtion: PDF2text, Docx2text<br>Add feature: View uploaded file on SummarizeScreen|
+|13.08.2023|Audio handler| Audio handle for `mp3, wav, mpga, mpeg`.<br>Add funtion: Speech2text using OpenAPI (whisper model).|
+|14.08.2023| Config App Name&Icon<br>README file|Delete unnecessary code<br>Testing, build APK<br>Write document…|
+
+</details>
+
+
+
 ## Authors
 
-- [@octokatherine](https://www.github.com/octokatherine)
+- [@Kongg](https://www.github.com/congltk1234)
 
 ## Badges
 
