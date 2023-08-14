@@ -5,19 +5,14 @@ A brief description of what this project does and who it's for
 
 ## Features
 
-- Light/dark mode toggle
-- Live previews
-- Fullscreen mode
-- Cross platform
+<h5><details>
+<summary>User Auth</summary>
 
-| Home|Chat|Summarize|
-|--|--|--|
-| ![Home UI](https://raw.githubusercontent.com/22T1020362/Chatbot-Summary-ntq/master/screenshots/screenshot1.png) | ![Chat UI](https://raw.githubusercontent.com/22T1020362/Chatbot-Summary-ntq/master/screenshots/screenshot1.png) | ![Summarize UI](https://raw.githubusercontent.com/22T1020362/Chatbot-Summary-ntq/master/screenshots/screenshot1.png) |
+|Login & Validation|Update & Logout|
+|--|--|
+<img src="https://raw.githubusercontent.com/congltk1234/BrycenChatbot/main/docs/assets/gif/Login.gif"  height="400"/>|<img src="https://raw.githubusercontent.com/congltk1234/BrycenChatbot/main/docs/assets/gif/Change_Logout.gif"  height="400"/>|
 
-
-| Home|Chat|Summarize|
-|--|--|--|
-| ![Home UI](https://raw.githubusercontent.com/22T1020362/Chatbot-Summary-ntq/master/screenshots/screenshot1.png) | ![Chat UI](https://raw.githubusercontent.com/22T1020362/Chatbot-Summary-ntq/master/screenshots/screenshot1.png) | ![Summarize UI](https://raw.githubusercontent.com/22T1020362/Chatbot-Summary-ntq/master/screenshots/screenshot1.png) |
+</details>
 
 
 ## Prerequisites
@@ -90,8 +85,13 @@ Running the following command from any directory:
 ```bash
   flutterfire configure
 ```
-![firebaseLogin](https://i0.wp.com/www.printmag.com/wp-content/uploads/2021/02/4cbe8d_f1ed2800a49649848102c68fc5a66e53mv2.gif)
 
+
+
+
+### 3. Export the App
+
+The APK [available here]()
 
 <details>
 <summary>Build file APK</summary>
@@ -104,6 +104,7 @@ or
 ```bash
   flutter build apk --no-pub --no-shrink
 ```
+![](https://raw.githubusercontent.com/congltk1234/BrycenChatbot/main/docs/assets/BuildAPK.jpg)
 
 </details>
 
@@ -116,6 +117,9 @@ Connect your Android device to your computer with a USB cable, then run the comm
   flutter install
 ```
 </details>
+
+
+
 
 ## Time Tracking
 <details open>
