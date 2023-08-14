@@ -5,14 +5,42 @@ A brief description of what this project does and who it's for
 
 ## Features
 
-<h5><details>
-<summary>User Auth</summary>
+<h4><details open>
+<summary>Home Screen</summary>
 
 |Login & Validation|Update & Logout|
 |--|--|
+<img src="https://raw.githubusercontent.com/congltk1234/BrycenChatbot/main/docs/assets/gif/Login.gif"  height="400"/>|<img src="https://raw.githubusercontent.com/congltk1234/BrycenChatbot/main/docs/assets/gif/Change_Logout.gif"  height="400"/>|<img src="https://raw.githubusercontent.com/congltk1234/BrycenChatbot/main/docs/assets/gif/Change_Logout.gif"  height="400"/>|
+
+
+|Drawer|Internet Status|
+|--|--|
+<img src="https://raw.githubusercontent.com/congltk1234/BrycenChatbot/main/docs/assets/gif/Login.gif"  height="400"/>|<img src="https://raw.githubusercontent.com/congltk1234/BrycenChatbot/main/docs/assets/gif/Change_Logout.gif"  height="400"/>|<img src="https://raw.githubusercontent.com/congltk1234/BrycenChatbot/main/docs/assets/gif/Change_Logout.gif"  height="400"/>|
+
+</details></h4>
+
+
+<h4><details open>
+<summary>Chat Screen</summary>
+
+|Memory Chatbot|Speech2Text|Copy & Audio|
+|--|--|--|
 <img src="https://raw.githubusercontent.com/congltk1234/BrycenChatbot/main/docs/assets/gif/Login.gif"  height="400"/>|<img src="https://raw.githubusercontent.com/congltk1234/BrycenChatbot/main/docs/assets/gif/Change_Logout.gif"  height="400"/>|
 
-</details>
+
+
+</details></h4>
+
+
+<h4><details open>
+<summary>Summarize Screen</summary>
+
+|Summarize|View File|Question Suggest|
+|--|--|--|
+|Support Files<br>Document:`txt, pdf, docx`<br>Audio:`mp3, wav, mpga, mpeg`|Can view <br>`pdf, docx, txt`|Generate Related questions<br> about the document |
+<img src="https://raw.githubusercontent.com/congltk1234/BrycenChatbot/main/docs/assets/gif/Login.gif"  height="400"/>|<img src="https://raw.githubusercontent.com/congltk1234/BrycenChatbot/main/docs/assets/gif/QuestionChip.gif"  height="400"/>|<img src="https://raw.githubusercontent.com/congltk1234/BrycenChatbot/main/docs/assets/gif/QuestionChip.gif"  height="400"/>|
+
+</details></h4>
 
 
 ## Prerequisites
@@ -91,7 +119,7 @@ Running the following command from any directory:
 
 ### 3. Export the App
 
-The APK [available here]()
+[Download App APK](https://github.com/congltk1234/BrycenChatbot/raw/main/output/release/app-release.apk)
 
 <details>
 <summary>Build file APK</summary>
