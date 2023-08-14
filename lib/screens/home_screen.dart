@@ -148,6 +148,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         _initUID = uid.docs.first.reference.id;
         print('Lưu userID vừa tạo vào local');
       });
+
       return;
     }
   }
@@ -212,7 +213,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             ),
             TextFormField(
               textAlign: TextAlign.center,
-              autofocus: true,
+              // autofocus: true,
               style: TextStyle(
                   fontSize: 20,
                   fontWeight: FontWeight.bold,
@@ -349,7 +350,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 ],
               ),
             ),
-            Text.rich(TextSpan(
+            Text.rich(
+              TextSpan(
                 text:
                     '${_initAPIKey.substring(0, 5)}***${_initAPIKey.substring(48, 51)}',
                 style: TextStyle(
@@ -360,7 +362,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   color: _isExpired
                       ? Colors.red
                       : Theme.of(context).colorScheme.primary,
-                ))),
+                ),
+              ),
+            ),
             Row(
               mainAxisAlignment: MainAxisAlignment.end,
               children: [
@@ -412,11 +416,21 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               mainAxisAlignment: MainAxisAlignment.center,
               children: <Widget>[
                 userForm,
-                if (_isValid)
-                  Row(
+                if (_isValid) // _isValid
+                  Column(
                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                     children: [
-                      ElevatedButton(
+                      ElevatedButton.icon(
+                        label: const Text(
+                          'Chatbot',
+                          textScaleFactor: 1.3,
+                        ),
+                        icon: const Icon(Icons.aod),
+                        style: ButtonStyle(
+                            backgroundColor:
+                                MaterialStateProperty.all(Colors.grey.shade100),
+                            minimumSize:
+                                MaterialStateProperty.all(const Size(150, 50))),
                         onPressed: !_isLoading
                             ? () {
                                 ref
@@ -425,9 +439,19 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                                 scaffoldKey.currentState!.openDrawer();
                               }
                             : null,
-                        child: const Text('Chatbot'),
                       ),
-                      ElevatedButton(
+                      const SizedBox(height: 10),
+                      ElevatedButton.icon(
+                        label: const Text(
+                          'Summary',
+                          textScaleFactor: 1.3,
+                        ),
+                        icon: const Icon(Icons.edit_document),
+                        style: ButtonStyle(
+                            backgroundColor:
+                                MaterialStateProperty.all(Colors.grey.shade100),
+                            minimumSize:
+                                MaterialStateProperty.all(const Size(150, 50))),
                         onPressed: !_isLoading
                             ? () {
                                 ref
@@ -436,7 +460,40 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                                 scaffoldKey.currentState!.openEndDrawer();
                               }
                             : null,
-                        child: const Text('Summary'),
+                      ),
+                      const SizedBox(height: 10),
+                      ElevatedButton.icon(
+                        label: const Text(
+                          'Logout',
+                          textScaleFactor: 1.3,
+                        ),
+                        icon: const Icon(Icons.logout),
+                        style: ButtonStyle(
+                            foregroundColor:
+                                MaterialStateProperty.all(Colors.grey.shade600),
+                            backgroundColor:
+                                MaterialStateProperty.all(Colors.grey.shade100),
+                            minimumSize:
+                                MaterialStateProperty.all(const Size(150, 50))),
+                        onPressed: !_isLoading
+                            ? () async {
+                                prefs = await SharedPreferences.getInstance();
+                                await prefs.clear().then((value) {
+                                  ScaffoldMessenger.of(context)
+                                      .showSnackBar(SnackBar(
+                                    backgroundColor:
+                                        Theme.of(context).colorScheme.primary,
+                                    content: const Text('Success Logout!'),
+                                  ));
+                                });
+                                _getLocalValue();
+                                setState(() {
+                                  _isValid = false;
+                                  _enteredAPIKey.clear();
+                                  _enteredUsername.clear();
+                                });
+                              }
+                            : null,
                       ),
                     ],
                   ),
