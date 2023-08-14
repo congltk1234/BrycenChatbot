@@ -15,6 +15,7 @@ Flutter Chatbot with OpenAI (GPT3.5 & Whisper) made by [@STkong](https://github.
 - [Installation](#installation)
 - [Error](#error)
 - [Update](#update)
+- [Future Work](#future-work)
 - [License](#license)
 
 
@@ -231,6 +232,19 @@ https://bobbyhadz.com/blog/flutterfire-is-not-recognized-as-internal-or-external
 |13.08.2023|Audio handler| Audio handle for `mp3, wav, mpga, mpeg`.<br>Add funtion: Speech2text using OpenAPI (whisper model).|
 |14.08.2023| Config App Name&Icon<br>README file|Delete unnecessary code<br>Testing, build APK<br>Write document…|
 |15.08.2023|Add logout<br>Update README|Refine the app, removing any redundant lines of code<br>Finish README|
+
+##### Future Work
+
+- [ ] Add provider, update app structure, optimize and clean code.
+- [ ] Audio Handler: Try package [just_audio](https://pub.dev/packages/just_audio) or [audioplayers](https://pub.dev/packages/audioplayers) for split long audio, play audio in file view
+- [ ] Markdown display: Try [flutter_markdown](https://pub.dev/packages/flutter_markdown) in chat screen
+- [ ] Migrate database: from FireStore(firebase) to [SQLite](https://pub.dev/packages/sqflite)
+- [ ] User Config model: Let user decide the model they want
+- [ ] Adjust Speech recognition: Show [glowing animation](https://pub.dev/packages/avatar_glow) of the sentence listening
+- [ ] Manage usage: Use [tiktoken](https://pub.dev/packages/tiktoken/) to calculate Token used
+- [ ] [Reduce tokens prompt](https://aiprimer.substack.com/p/gpt-prompt-compression-save-tokens): Preprocessing prompt and Parser response with [text_analysis](https://pub.dev/packages/text_analysis)
+
+
 </details>
 
 
