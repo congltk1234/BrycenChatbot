@@ -28,6 +28,12 @@ Flutter Chatbot with OpenAI (GPT3.5 & Whisper) made by [@STkong](https://github.
 2. **Summarize File Upload:**
    Easily upload documents and audio files to generate concise summaries. The app utilizes cutting-edge summarization techniques to extract the most important information from your content.
 
+
+https://github.com/congltk1234/BrycenChatbot/assets/73183412/ff0f6ee4-48af-4bad-b310-c94ca9a96427
+
+
+
+
 <h4><details>
 <summary>Home Screen</summary>
 
