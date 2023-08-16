@@ -34,29 +34,33 @@ dependencies:
 
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
-  cupertino_icons: ^1.0.2
-  http: ^1.1.0
-  shared_preferences: ^2.2.0
-  langchain: ^0.0.1
-  cloud_firestore: ^4.8.4
-  firebase_core: ^2.15.0
-  speech_to_text: ^6.3.0
-  flutter_tts: ^3.7.0
+  cupertino_icons: ^1.0.2       
+  google_fonts: ^5.1.0          # Google fonts for App
+  intl: ^0.18.1                 # Date/Time <-> Timestamp
+  http: ^1.1.0                  # Http requests
+  connection_notifier: ^1.0.1   # Internet connection status
+  shared_preferences: ^2.2.0    # Store value on local device
+  flutter_riverpod: ^2.3.6      # Provider 
+# Firebase cloud service packages
+  firebase_core: ^2.15.0        # Firebase core
+  cloud_firestore: ^4.8.4       # Store database
+  firebase_storage: ^11.2.5     # Store files upload
+# OpenAPI request packages
   dart_openai: ^4.0.0
-  animated_text_kit: ^4.2.2
-  intl: ^0.18.1
+  langchain: ^0.0.1            
   langchain_openai: ^0.0.3
-  flutter_markdown: ^0.6.17
-  google_fonts: ^5.1.0
-  file_picker: ^5.3.3
-  flutter_riverpod: ^2.3.6
-  connection_notifier: ^1.0.1
-  open_file: ^3.3.2
-  docx_to_text: ^1.0.1
-  syncfusion_flutter_pdf: ^22.2.8
-  firebase_storage: ^11.2.5
-  dio: ^5.3.2
-  flutter_launcher_icons: ^0.13.1
+# Files manage packages
+  file_picker: ^5.3.3           # Select files from device
+  open_file: ^3.3.2             # View files from device
+  dio: ^5.3.2                   # Download files to local device
+# Convert packages
+  speech_to_text: ^6.3.0        # Speech to text
+  flutter_tts: ^3.7.0           # Text to Speech
+  docx_to_text: ^1.0.1              # Word docx -> txt
+  syncfusion_flutter_pdf: ^22.2.8   # PDF -> txt
+# UI packages
+  flutter_launcher_icons: ^0.13.1   # Load icons
+  animated_text_kit: ^4.2.2         # Animation typing
 
 
 dev_dependencies:

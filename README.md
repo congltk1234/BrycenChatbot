@@ -30,8 +30,9 @@ Flutter Chatbot with OpenAI (GPT3.5 & Whisper) made by [@STkong](https://github.
 
 
 
-[demoVideo.webm](https://github.com/congltk1234/BrycenChatbot/assets/73183412/c3ee5de5-b178-49bb-9e25-69397392c044)
+<!-- [demoVideo.webm](https://github.com/congltk1234/BrycenChatbot/assets/73183412/c3ee5de5-b178-49bb-9e25-69397392c044) -->
 
+https://github.com/congltk1234/BrycenChatbot/assets/73183412/ff0f6ee4-48af-4bad-b310-c94ca9a96427
 
 <h4><details>
 <summary>Home Screen</summary>

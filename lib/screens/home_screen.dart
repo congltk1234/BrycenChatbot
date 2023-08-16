@@ -2,18 +2,19 @@
 import 'dart:io';
 import 'package:brycen_chatbot/widget/internet_error.dart';
 
-import '../models/chatTitle.dart';
-import '../providers/menu_provider.dart';
-import 'chat_screen.dart';
-import 'summarize_screen.dart';
-import '../values/share_keys.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:connection_notifier/connection_notifier.dart';
+import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:http/http.dart' as http;
-import 'dart:convert';
+import 'package:connection_notifier/connection_notifier.dart';
+
+import 'chat_screen.dart';
+import 'summarize_screen.dart';
+import '../models/chatTitle.dart';
+import '../providers/menu_provider.dart';
+import '../values/share_keys.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
@@ -49,11 +50,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     setState(() {
       _isLoading = true;
     });
-    checkInternet();
     _getLocalValue();
     super.initState();
   }
 
+  /// Send a test request to openAPI and get response
   Future<bool> checkApiKey(String apiKey) async {
     final response = await http.post(
       Uri.parse("https://api.openai.com/v1/completions"),
@@ -69,7 +70,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       }),
     );
     ScaffoldMessenger.of(context).clearSnackBars();
-
     final message = jsonDecode(response.body);
     if (response.statusCode == 200) {
       _isAPI = true;
@@ -86,7 +86,13 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     }
   }
 
+// Submit UserForm ->
+// Check if username/APIkey exist?
+// If exist -> Get userID
+// if non-exist -> Create new user -> get userID
+// Then Store user value at local device
   Future<void> _submit() async {
+    /// Save user input values in local device
     if (_formKey.currentState!.validate()) {
       _formKey.currentState!.save();
       await prefs.setString(ShareKeys.APIkey, _enteredAPIKey.text);
@@ -99,10 +105,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         ),
       );
 
-      print('Kiểm userID local');
       setState(() {
         _isExpired = false;
       });
+
+      print('Kiểm userID local');
       if (_initUID == '') {
         try {
           final uid = await FirebaseFirestore.instance
@@ -153,22 +160,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     }
   }
 
-  void checkInternet() async {
-    try {
-      final result = await InternetAddress.lookup('example.com');
-      if (result.isNotEmpty && result[0].rawAddress.isNotEmpty) {
-        print('connected');
-      }
-    } on SocketException catch (_) {
-      print('not connected');
-
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-        backgroundColor: Theme.of(context).colorScheme.error,
-        content: const Text('not connected'),
-      ));
-    }
-  }
-
+// Retrieve value stored at local value (UserID, Username, APIkey)
   void _getLocalValue() async {
     prefs = await SharedPreferences.getInstance();
     setState(() {
@@ -213,7 +205,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             ),
             TextFormField(
               textAlign: TextAlign.center,
-              // autofocus: true,
               style: TextStyle(
                   fontSize: 20,
                   fontWeight: FontWeight.bold,
@@ -376,15 +367,16 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     ),
                   ),
                 TextButton(
-                    onPressed: () {
-                      setState(() {
-                        _isValid = false;
-                      });
-                    },
-                    child: const Text(
-                      'change Key',
-                      style: TextStyle(decoration: TextDecoration.underline),
-                    )),
+                  onPressed: () {
+                    setState(() {
+                      _isValid = false;
+                    });
+                  },
+                  child: const Text(
+                    'change Key',
+                    style: TextStyle(decoration: TextDecoration.underline),
+                  ),
+                ),
               ],
             ),
           ],
@@ -487,11 +479,13 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                                   ));
                                 });
                                 _getLocalValue();
-                                setState(() {
-                                  _isValid = false;
-                                  _enteredAPIKey.clear();
-                                  _enteredUsername.clear();
-                                });
+                                setState(
+                                  () {
+                                    _isValid = false;
+                                    _enteredAPIKey.clear();
+                                    _enteredUsername.clear();
+                                  },
+                                );
                               }
                             : null,
                       ),

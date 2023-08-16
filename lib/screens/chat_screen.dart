@@ -55,6 +55,7 @@ class _ChatScreenState extends State<ChatScreen> {
     super.dispose();
   }
 
+// Auto scroll to newest message
   void scrollListToEND() {
     _listScrollController.animateTo(
         _listScrollController.position.maxScrollExtent,
@@ -65,141 +66,140 @@ class _ChatScreenState extends State<ChatScreen> {
   @override
   Widget build(BuildContext context) {
     return StreamBuilder(
-        stream: FirebaseFirestore.instance
-            .collection("users")
-            .doc(widget.uid)
-            .collection('chat')
-            .doc(widget.chatTitleID)
-            .collection('chat_history')
-            .orderBy(
-              "createdAt",
-              descending: true,
-            )
-            .snapshots(),
-        builder: (ctx, chatSnapshots) {
-          if (chatSnapshots.hasError) {
+      stream: FirebaseFirestore.instance
+          .collection("users")
+          .doc(widget.uid)
+          .collection('chat')
+          .doc(widget.chatTitleID)
+          .collection('chat_history')
+          .orderBy(
+            "createdAt",
+            descending: true,
+          )
+          .snapshots(),
+      builder: (ctx, chatSnapshots) {
+        if (chatSnapshots.hasError) {
+          return Scaffold(
+            appBar: const ConfigAppBar(title: 'Chat Screen'),
+            body: Expanded(
+              child: Center(
+                child: Text('Error: ${chatSnapshots.error}'),
+              ),
+            ),
+          );
+        }
+        switch (chatSnapshots.connectionState) {
+          case ConnectionState.waiting:
+            return const Center(
+              child: CircularProgressIndicator(
+                backgroundColor: Color.fromARGB(255, 255, 246, 246),
+              ),
+            );
+          case ConnectionState.none:
+            return const Expanded(
+              child: Center(
+                child: Text('No Data'),
+              ),
+            );
+          case ConnectionState.active:
+            if (!chatSnapshots.hasData || chatSnapshots.data!.docs.isEmpty) {
+              return Scaffold(
+                appBar: ConfigAppBar(title: widget.chatTitle),
+                body: Column(
+                  children: [
+                    const Expanded(
+                      child: Center(
+                        child: Text('No messages found.'),
+                      ),
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.all(12.0),
+                      child: TextAndVoiceField(
+                        uid: widget.uid,
+                        userName: widget.userName,
+                        apiKey: widget.apiKey,
+                        memory: _memoryBuffer,
+                        taskMode: 'chat',
+                        chatID: widget.chatTitleID,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                  ],
+                ),
+              );
+            }
+
+            ////////// Handle OutofList error
+            final loadedMessages = List.from(chatSnapshots.data!.docs.reversed);
+            final lengthHistory = loadedMessages.length;
+            memory = lengthHistory >= (k_memory)
+                ? loadedMessages.sublist(
+                    lengthHistory - k_memory, lengthHistory)
+                : loadedMessages.sublist(0, lengthHistory - 1);
+
+            _memoryBuffer = '';
+            for (var msg in memory) {
+              _memoryBuffer =
+                  "$_memoryBuffer\nHuman:${msg.data()['Human']}\nAI:${msg.data()['AI']}";
+            }
+
+            if (_needsScroll) {
+              WidgetsBinding.instance
+                  .addPostFrameCallback((_) => scrollListToEND());
+              // _needsScroll = false;
+            }
+            print(widget.chatTitleID);
             return Scaffold(
-              appBar: const ConfigAppBar(title: 'Chat Screen'),
-              body: Expanded(
-                child: Center(
-                  child: Text('Error: ${chatSnapshots.error}'),
+              appBar: ConfigAppBar(title: widget.chatTitle),
+              body: ConnectionNotifierToggler(
+                onConnectionStatusChanged: (connected) {
+                  if (connected == null) return;
+                },
+                disconnected: const InternetError(),
+                connected: Column(
+                  children: [
+                    Expanded(
+                      child: ListView.builder(
+                          controller: _listScrollController,
+                          itemCount: lengthHistory,
+                          itemBuilder: (context, index) {
+                            final chatMessage = loadedMessages[index].data();
+
+                            return ChatItem(
+                              humanMessage: chatMessage["Human"],
+                              botResponse: chatMessage["AI"],
+                              tokens: chatMessage["totalTokens"],
+                              timeStamp: DateFormat.yMMMd().add_jm().format(
+                                  DateTime.parse(chatMessage["createdAt"]
+                                      .toDate()
+                                      .toString())),
+                              shouldAnimate: lengthHistory < 1
+                                  ? lengthHistory == index
+                                  : lengthHistory - 1 == index,
+                            );
+                          }),
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.all(12.0),
+                      child: TextAndVoiceField(
+                        uid: widget.uid,
+                        userName: widget.userName,
+                        apiKey: widget.apiKey,
+                        memory: _memoryBuffer,
+                        taskMode: 'chat',
+                        chatID: widget.chatTitleID,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                  ],
                 ),
               ),
             );
-          }
-          switch (chatSnapshots.connectionState) {
-            case ConnectionState.waiting:
-              return const Center(
-                child: CircularProgressIndicator(
-                  backgroundColor: Color.fromARGB(255, 255, 246, 246),
-                ),
-              );
-            case ConnectionState.none:
-              return const Expanded(
-                child: Center(
-                  child: Text('No Data'),
-                ),
-              );
-            case ConnectionState.active:
-              if (!chatSnapshots.hasData || chatSnapshots.data!.docs.isEmpty) {
-                return Scaffold(
-                  appBar: ConfigAppBar(title: widget.chatTitle),
-                  body: Column(
-                    children: [
-                      const Expanded(
-                        child: Center(
-                          child: Text('No messages found.'),
-                        ),
-                      ),
-                      Padding(
-                        padding: const EdgeInsets.all(12.0),
-                        child: TextAndVoiceField(
-                          uid: widget.uid,
-                          userName: widget.userName,
-                          apiKey: widget.apiKey,
-                          memory: _memoryBuffer,
-                          taskMode: 'chat',
-                          chatID: widget.chatTitleID,
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                    ],
-                  ),
-                );
-              }
-
-              ////////// Handle OutofList error
-              final loadedMessages =
-                  List.from(chatSnapshots.data!.docs.reversed);
-              final lengthHistory = loadedMessages.length;
-              memory = lengthHistory >= (k_memory)
-                  ? loadedMessages.sublist(
-                      lengthHistory - k_memory, lengthHistory)
-                  : loadedMessages.sublist(0, lengthHistory - 1);
-
-              _memoryBuffer = '';
-              for (var msg in memory) {
-                _memoryBuffer =
-                    "$_memoryBuffer\nHuman:${msg.data()['Human']}\nAI:${msg.data()['AI']}";
-              }
-              // print(_memoryBuffer);
-
-              if (_needsScroll) {
-                WidgetsBinding.instance
-                    .addPostFrameCallback((_) => scrollListToEND());
-                // _needsScroll = false;
-              }
-              print(widget.chatTitleID);
-              return Scaffold(
-                appBar: ConfigAppBar(title: widget.chatTitle),
-                body: ConnectionNotifierToggler(
-                  onConnectionStatusChanged: (connected) {
-                    if (connected == null) return;
-                  },
-                  disconnected: const InternetError(),
-                  connected: Column(
-                    children: [
-                      Expanded(
-                        child: ListView.builder(
-                            controller: _listScrollController,
-                            itemCount: lengthHistory,
-                            itemBuilder: (context, index) {
-                              final chatMessage = loadedMessages[index].data();
-
-                              return ChatItem(
-                                humanMessage: chatMessage["Human"],
-                                botResponse: chatMessage["AI"],
-                                tokens: chatMessage["totalTokens"],
-                                timeStamp: DateFormat.yMMMd().add_jm().format(
-                                    DateTime.parse(chatMessage["createdAt"]
-                                        .toDate()
-                                        .toString())),
-                                shouldAnimate: lengthHistory < 1
-                                    ? lengthHistory == index
-                                    : lengthHistory - 1 == index,
-                              );
-                            }),
-                      ),
-                      Padding(
-                        padding: const EdgeInsets.all(12.0),
-                        child: TextAndVoiceField(
-                          uid: widget.uid,
-                          userName: widget.userName,
-                          apiKey: widget.apiKey,
-                          memory: _memoryBuffer,
-                          taskMode: 'chat',
-                          chatID: widget.chatTitleID,
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                    ],
-                  ),
-                ),
-              );
-            case ConnectionState.done:
-              break;
-          }
-          return const Center(child: Text('error'));
-        });
+          case ConnectionState.done:
+            break;
+        }
+        return const Center(child: Text('error'));
+      },
+    );
   }
 }
