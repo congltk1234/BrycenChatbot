@@ -4,7 +4,7 @@ Flutter Chatbot with OpenAI (GPT3.5 & Whisper) made by [@STkong](https://github.
 
 |Description|Click below to download APK|
 |--|--|
-|This Flutter application integrates OpenAI's ChatGPT 3.5 LLM model to enable interactive conversations<br> and provides a feature to summarize uploaded documents and audio files. The app serves as a powerful tool for engaging conversations and efficient content summarization.<br>The app was developed during my internship at [BRYCEN Vietnam company](https://brycen.com.vn/en/)|[![logoApp](https://github-production-user-asset-6210df.s3.amazonaws.com/73183412/260543335-34b0c872-831a-417b-8341-d7c03efe1289.jpg)](https://github.com/congltk1234/BrycenChatbot/raw/main/output/release/app-release.apk)|
+|This Flutter application integrates OpenAI's ChatGPT 3.5 LLM model to enable interactive conversations,<br>provides a feature to summarize uploaded documents and audio files. The app serves as a powerful tool for engaging conversations and efficient content summarization.<br>The app was developed during my internship at [BRYCEN Vietnam company](https://brycen.com.vn/en/)|[![logoApp](https://github-production-user-asset-6210df.s3.amazonaws.com/73183412/260543335-34b0c872-831a-417b-8341-d7c03efe1289.jpg)](https://github.com/congltk1234/BrycenChatbot/raw/main/output/release/app-release.apk)|
 
 
 
